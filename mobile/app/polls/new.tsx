@@ -155,8 +155,8 @@ export default function NewPollScreen() {
                                 key={d}
                                 onPress={() => setDays(d)}
                                 className={`flex-1 h-20 rounded-[20px] items-center justify-center border-2 ${days === d
-                                        ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-200'
-                                        : 'bg-white border-slate-100'
+                                    ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-200'
+                                    : 'bg-white border-slate-100'
                                     }`}
                                 activeOpacity={0.7}
                             >

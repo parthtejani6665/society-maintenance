@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
-import { Stack } from 'expo-router';
-import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, ChevronLeft } from 'lucide-react-native';
 import { bookingService } from '../../services/bookingService';
 import { Booking } from '../../types';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '../../components/Icon';
 
 function TabBarIcon(props: { icon: any; color: string; size?: number }) {
     const { icon: Icon, color, size = 24 } = props;
@@ -14,6 +16,8 @@ function TabBarIcon(props: { icon: any; color: string; size?: number }) {
 
 export default function MyBookingsScreen() {
     const { t } = useTranslation();
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -137,11 +141,21 @@ export default function MyBookingsScreen() {
 
     return (
         <View className="flex-1 bg-gradient-to-b from-indigo-50 to-white">
-            <Stack.Screen options={{
-                title: t('common.myBookings'),
-                headerStyle: { backgroundColor: 'white' },
-                headerShadowVisible: true
-            }} />
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* Custom Header with Safe Area */}
+            <View
+                className="bg-white px-4 pb-4 border-b border-slate-100 shadow-sm shadow-slate-200/50 z-10 flex-row items-center gap-3"
+                style={{ paddingTop: insets.top + 10 }}
+            >
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="w-10 h-10 bg-slate-50 rounded-full items-center justify-center border border-slate-100"
+                >
+                    <Icon icon={ChevronLeft} color="#0f172a" size={24} />
+                </TouchableOpacity>
+                <Text className="text-xl font-black text-slate-900 tracking-tight">{t('common.myBookings')}</Text>
+            </View>
 
             <FlatList
                 data={bookings}
@@ -157,7 +171,7 @@ export default function MyBookingsScreen() {
                         </View>
                         <Text className="text-gray-600 text-xl font-extrabold">{t('manageBookings.noBookings', { status: '' })}</Text>
                         <Text className="text-gray-400 text-center mt-2 px-10">
-                            You haven't made any bookings yet
+                            {t('amenities.noBookingsYet')}
                         </Text>
                     </View>
                 }

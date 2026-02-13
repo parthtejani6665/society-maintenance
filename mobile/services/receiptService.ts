@@ -1,8 +1,7 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import { StorageAccessFramework, EncodingType } from 'expo-file-system';
 import { Platform, Alert } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export interface ReceiptData {
     id: string;
@@ -150,32 +149,24 @@ export const receiptService = {
 
         try {
             const { uri } = await Print.printToFileAsync({ html });
-            const fileName = `Receipt_${data.month}_${data.year}.pdf`;
 
-            if (Platform.OS === 'android' && StorageAccessFramework) {
-                console.log('ReceiptService: Requesting SAF permissions...');
-                const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
-
-                if (permissions.granted) {
-                    console.log('ReceiptService: Permissions granted. Reading file...');
-                    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: EncodingType.Base64 });
-                    console.log('ReceiptService: Creating file via SAF...');
-                    await StorageAccessFramework.createFileAsync(permissions.directoryUri, fileName, 'application/pdf')
-                        .then(async (safUri: string) => {
-                            console.log('ReceiptService: Writing to SAF URI:', safUri);
-                            await FileSystem.writeAsStringAsync(safUri, base64, { encoding: EncodingType.Base64 });
-                            Alert.alert('Success', 'Receipt saved to your device!');
-                        })
-                        .catch((e) => {
-                            console.error('File creation error:', e);
-                            throw new Error('Failed to create file');
-                        });
-                } else {
-                    // Fallback to sharing if permission denied
-                    await Sharing.shareAsync(uri);
+            if (Platform.OS === 'android') {
+                try {
+                    const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+                    if (permissions.granted) {
+                        const fileName = `Receipt_${data.month}_${data.year}.pdf`;
+                        const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+                        const createdUri = await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, fileName, 'application/pdf');
+                        await FileSystem.writeAsStringAsync(createdUri, base64, { encoding: 'base64' });
+                        Alert.alert('Success', 'Receipt downloaded to your selected folder!');
+                    } else {
+                        await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+                    }
+                } catch (e) {
+                    console.error('Android SAF Error:', e);
+                    await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
                 }
             } else {
-                // iOS: Use Share Sheet as it's the standard way to "Save to Files"
                 await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
             }
         } catch (error) {

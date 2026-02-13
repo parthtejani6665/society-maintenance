@@ -9,6 +9,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORIES = [
     { label: 'Water', value: 'water', icon: Droplet, color: '#3b82f6' },
@@ -20,6 +21,7 @@ const CATEGORIES = [
 ];
 
 export default function NewComplaint() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -31,11 +33,11 @@ export default function NewComplaint() {
     const handleMediaPress = (type: 'image' | 'video') => {
         Alert.alert(
             `Add ${type === 'image' ? 'Photo' : 'Video'}`,
-            'Choose a source',
+            t('complaints.chooseSource'),
             [
-                { text: 'Camera', onPress: () => pickMedia(type, 'camera') },
-                { text: 'Gallery', onPress: () => pickMedia(type, 'library') },
-                { text: 'Cancel', style: 'cancel' }
+                { text: t('common.camera'), onPress: () => pickMedia(type, 'camera') },
+                { text: t('common.gallery'), onPress: () => pickMedia(type, 'library') },
+                { text: t('common.cancel'), style: 'cancel' }
             ]
         );
     };
@@ -46,7 +48,7 @@ export default function NewComplaint() {
             : await ImagePicker.requestCameraPermissionsAsync();
 
         if (permission.status !== 'granted') {
-            Alert.alert('Permission Denied', `Sorry, we need ${source} permissions to make this work!`);
+            Alert.alert(t('complaints.permissionDenied'), t('complaints.permissionMessage'));
             return;
         }
 
@@ -69,7 +71,7 @@ export default function NewComplaint() {
 
     const handleSubmit = async () => {
         if (!title.trim() || !description.trim()) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert(t('common.error'), t('common.fillAllFields'));
             return;
         }
 
@@ -95,16 +97,17 @@ export default function NewComplaint() {
             }
 
             await complaintService.createComplaint(formData);
-            Alert.alert('Success', 'Complaint submitted successfully', [
-                { text: 'OK', onPress: () => router.back() }
+            Alert.alert(t('common.success'), t('complaints.submitSuccess'), [
+                { text: t('common.ok'), onPress: () => router.back() }
             ]);
         } catch (error) {
             console.error(error);
-            Alert.alert('Error', 'Failed to submit complaint');
+            Alert.alert(t('common.error'), t('complaints.submitError'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <View className="flex-1 bg-slate-50">
@@ -119,28 +122,29 @@ export default function NewComplaint() {
                     <Icon icon={ChevronLeft} color="#475569" size={24} />
                 </TouchableOpacity>
                 <View>
-                    <Text className="text-2xl font-black text-slate-900">New Complaint</Text>
-                    <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Report society issues</Text>
+                    <Text className="text-2xl font-black text-slate-900">{t('complaints.newComplaint')}</Text>
+                    <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">{t('complaints.newSubtitle')}</Text>
                 </View>
             </View>
 
             <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
                 {/* Title and Description */}
                 <Card className="mb-6 p-6">
+
                     <Input
-                        label="Complaint Title"
-                        placeholder="What is the issue?"
+                        label={t('complaints.complaintTitle')}
+                        placeholder={t('complaints.titlePlaceholderInput')}
                         value={title}
                         onChangeText={setTitle}
                         icon={<Icon icon={AlertCircle} color="#94a3b8" size={20} />}
                         containerClassName="mb-6"
                     />
 
-                    <Text className="text-slate-700 font-bold mb-3 text-sm ml-1">Detailed Description</Text>
+                    <Text className="text-slate-700 font-bold mb-3 text-sm ml-1">{t('complaints.detailedDescription')}</Text>
                     <View className="bg-slate-50 border border-slate-200 rounded-3xl p-4 min-h-[140px] mb-2 focus:border-blue-500">
                         <TextInput
                             className="flex-1 text-slate-900 text-base leading-6"
-                            placeholder="Please provide as much detail as possible to help us resolve this quickly..."
+                            placeholder={t('complaints.descriptionPlaceholder')}
                             placeholderTextColor="#94a3b8"
                             value={description}
                             onChangeText={setDescription}
@@ -150,17 +154,18 @@ export default function NewComplaint() {
                     </View>
                 </Card>
 
+
                 {/* Category Selection */}
                 <Card className="mb-6 p-6">
-                    <Text className="text-slate-900 font-black text-lg mb-5">Categorize Issue</Text>
+                    <Text className="text-slate-900 font-black text-lg mb-5">{t('complaints.categorizeIssue')}</Text>
                     <View className="flex-row flex-wrap gap-3">
                         {CATEGORIES.map((cat) => (
                             <TouchableOpacity
                                 key={cat.value}
                                 onPress={() => setCategory(cat.value)}
                                 className={`flex-row items-center px-4 py-3 rounded-2xl border-2 ${category === cat.value
-                                        ? 'border-blue-800 bg-blue-50'
-                                        : 'bg-white border-slate-100'
+                                    ? 'border-blue-800 bg-blue-50'
+                                    : 'bg-white border-slate-100'
                                     }`}
                                 activeOpacity={0.7}
                             >
@@ -173,7 +178,7 @@ export default function NewComplaint() {
                                     className={`ml-2 ${category === cat.value ? 'text-blue-900 font-black' : 'text-slate-500 font-bold'
                                         } text-[13px] tracking-tight`}
                                 >
-                                    {cat.label}
+                                    {t(`complaints.categories.${cat.value}`)}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -182,7 +187,7 @@ export default function NewComplaint() {
 
                 {/* Media Attachments */}
                 <Card className="mb-8 p-6">
-                    <Text className="text-slate-900 font-black text-lg mb-5">Keep Evidence (Optional)</Text>
+                    <Text className="text-slate-900 font-black text-lg mb-5">{t('complaints.keepEvidence')}</Text>
                     <View className="flex-row gap-4 mb-6">
                         <TouchableOpacity
                             onPress={() => handleMediaPress('image')}
@@ -192,7 +197,7 @@ export default function NewComplaint() {
                                 <Icon icon={ImageIcon} color={image ? 'white' : '#94a3b8'} size={24} />
                             </View>
                             <Text className={`text-[10px] font-black uppercase tracking-widest ${image ? 'text-blue-800' : 'text-slate-400'}`}>
-                                {image ? 'Photo Added' : 'Add Photo'}
+                                {image ? t('complaints.photoAdded') : t('complaints.addPhoto')}
                             </Text>
                         </TouchableOpacity>
 
@@ -204,7 +209,7 @@ export default function NewComplaint() {
                                 <Icon icon={Video} color={video ? 'white' : '#94a3b8'} size={24} />
                             </View>
                             <Text className={`text-[10px] font-black uppercase tracking-widest ${video ? 'text-blue-800' : 'text-slate-400'}`}>
-                                {video ? 'Video Added' : 'Add Video'}
+                                {video ? t('complaints.videoAdded') : t('complaints.addVideo')}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -244,7 +249,7 @@ export default function NewComplaint() {
 
                 {/* Submit Button */}
                 <Button
-                    title="Submit Complaint"
+                    title={t('complaints.submitComplaint')}
                     onPress={handleSubmit}
                     loading={loading}
                     variant="primary"
@@ -253,7 +258,7 @@ export default function NewComplaint() {
                 />
 
                 <Text className="text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-6">
-                    Verified resolution within 48 hours
+                    {t('complaints.resolutionPromise')}
                 </Text>
             </ScrollView>
         </View>

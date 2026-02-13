@@ -10,8 +10,10 @@ import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { googleAuthService } from '../../services/googleAuthService';
 import { Chrome } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -23,7 +25,7 @@ export default function Login() {
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert(t('common.error'), 'Please fill in all fields');
             return;
         }
 
@@ -33,7 +35,7 @@ export default function Login() {
             const { token, user } = response.data;
             await signIn(token, user);
         } catch (error: any) {
-            Alert.alert('Login Failed', error.response?.data?.message || 'Something went wrong');
+            Alert.alert(t('common.error'), error.response?.data?.message || 'Something went wrong');
         } finally {
             setLoading(false);
         }
@@ -53,7 +55,7 @@ export default function Login() {
             }
         } catch (error: any) {
             if (error.message !== 'Google Sign-In was cancelled.') {
-                Alert.alert('Google Login Failed', error.message || 'Could not sign in with Google');
+                Alert.alert(t('common.error'), error.message || 'Could not sign in with Google');
             }
         } finally {
             setGoogleLoading(false);
@@ -76,18 +78,18 @@ export default function Login() {
                         <View className="bg-blue-800 w-24 h-24 rounded-3xl items-center justify-center mb-6 shadow-xl shadow-blue-500/30">
                             <Icon icon={Building2} color="white" size={48} />
                         </View>
-                        <Text className="text-4xl font-extrabold text-slate-900 mb-2">Digital Dwell</Text>
+                        <Text className="text-4xl font-extrabold text-slate-900 mb-2">{t('auth.appTitle')}</Text>
                         <Text className="text-slate-500 text-lg text-center px-4">
-                            Premium Society Management & Services
+                            {t('auth.subtitle')}
                         </Text>
                     </View>
 
                     {/* Login Form */}
                     <Card className="shadow-2xl shadow-slate-300">
-                        <Text className="text-2xl font-bold text-slate-900 mb-6">Welcome Back</Text>
+                        <Text className="text-2xl font-bold text-slate-900 mb-6">{t('auth.welcomeBack')}</Text>
 
                         <Input
-                            label="Email Address"
+                            label={t('users.email')}
                             placeholder="your.email@example.com"
                             value={email}
                             onChangeText={setEmail}
@@ -98,7 +100,7 @@ export default function Login() {
 
                         <View>
                             <Input
-                                label="Password"
+                                label={t('auth.password')}
                                 placeholder="••••••••"
                                 value={password}
                                 onChangeText={setPassword}
@@ -116,11 +118,11 @@ export default function Login() {
                         </View>
 
                         <TouchableOpacity className="mb-8" activeOpacity={0.7}>
-                            <Text className="text-blue-700 font-bold text-right">Forgot Password?</Text>
+                            <Text className="text-blue-700 font-bold text-right">{t('auth.forgotPassword')}</Text>
                         </TouchableOpacity>
 
                         <Button
-                            title="Sign In"
+                            title={t('auth.signIn')}
                             onPress={handleLogin}
                             loading={loading}
                             className="bg-blue-800 mb-6"
@@ -129,7 +131,7 @@ export default function Login() {
                         {/* Divider */}
                         <View className="flex-row items-center mb-6">
                             <View className="flex-1 h-[1px] bg-slate-200" />
-                            <Text className="mx-4 text-slate-400 font-bold text-xs uppercase tracking-widest">Or</Text>
+                            <Text className="mx-4 text-slate-400 font-bold text-xs uppercase tracking-widest">{t('auth.or')}</Text>
                             <View className="flex-1 h-[1px] bg-slate-200" />
                         </View>
 
@@ -143,14 +145,14 @@ export default function Login() {
                                 <Icon icon={Chrome} color="#4285F4" size={20} />
                             </View>
                             <Text className="text-slate-900 font-bold text-base">
-                                {googleLoading ? 'Connecting...' : 'Continue with Google'}
+                                {googleLoading ? t('auth.connecting') : t('auth.googleLogin')}
                             </Text>
                         </TouchableOpacity>
 
                         <View className="flex-row justify-center items-center mt-6">
-                            <Text className="text-slate-600">Don't have an account? </Text>
+                            <Text className="text-slate-600">{t('auth.noAccount')} </Text>
                             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-                                <Text className="text-blue-800 font-bold">Sign Up</Text>
+                                <Text className="text-blue-800 font-bold">{t('auth.signUp')}</Text>
                             </TouchableOpacity>
                         </View>
                     </Card>

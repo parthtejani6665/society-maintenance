@@ -4,6 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { ChevronLeft, User, Phone, Home, Mail, Save } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
+import { useTranslation } from 'react-i18next';
 
 function TabBarIcon(props: { icon: any; color: string; size?: number }) {
     const { icon: Icon, color, size = 24 } = props;
@@ -11,6 +12,7 @@ function TabBarIcon(props: { icon: any; color: string; size?: number }) {
 }
 
 export default function EditProfile() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { user, signIn } = useAuth();
 
@@ -22,7 +24,7 @@ export default function EditProfile() {
 
     const handleSubmit = async () => {
         if (!fullName.trim()) {
-            Alert.alert('Error', 'Full Name is required');
+            Alert.alert(t('common.error'), t('profile.fullNameRequired'));
             return;
         }
 
@@ -52,12 +54,12 @@ export default function EditProfile() {
                 await signIn(token, updatedUser);
             }
 
-            Alert.alert('Success', 'Profile updated successfully', [
+            Alert.alert(t('common.success'), t('profile.updateSuccess'), [
                 { text: 'OK', onPress: () => router.back() }
             ]);
         } catch (error) {
             console.error(error);
-            Alert.alert('Error', 'Failed to update profile');
+            Alert.alert(t('common.error'), t('profile.updateFailed'));
         } finally {
             setLoading(false);
         }
@@ -76,8 +78,8 @@ export default function EditProfile() {
                     <TabBarIcon icon={ChevronLeft} color="#374151" size={22} />
                 </TouchableOpacity>
                 <View>
-                    <Text className="text-2xl font-extrabold text-gray-900">Edit Profile</Text>
-                    <Text className="text-gray-500 text-sm mt-0.5">Update your information</Text>
+                    <Text className="text-2xl font-extrabold text-gray-900">{t('profile.editProfile')}</Text>
+                    <Text className="text-gray-500 text-sm mt-0.5">{t('profile.updateInfo')}</Text>
                 </View>
             </View>
 
@@ -88,11 +90,11 @@ export default function EditProfile() {
                         <View className="bg-blue-50 p-2 rounded-lg mr-3">
                             <TabBarIcon icon={User} color="#2563eb" size={20} />
                         </View>
-                        <Text className="text-gray-700 font-bold text-base">Full Name *</Text>
+                        <Text className="text-gray-700 font-bold text-base">{t('profile.fullName')} *</Text>
                     </View>
                     <TextInput
                         className="border-2 border-gray-200 rounded-xl p-4 bg-gray-50 text-gray-800 text-base"
-                        placeholder="Enter full name"
+                        placeholder={t('profile.enterFullName')}
                         placeholderTextColor="#9ca3af"
                         value={fullName}
                         onChangeText={setFullName}
@@ -105,11 +107,11 @@ export default function EditProfile() {
                         <View className="bg-green-50 p-2 rounded-lg mr-3">
                             <TabBarIcon icon={Phone} color="#16a34a" size={20} />
                         </View>
-                        <Text className="text-gray-700 font-bold text-base">Phone Number</Text>
+                        <Text className="text-gray-700 font-bold text-base">{t('profile.phoneNumber')}</Text>
                     </View>
                     <TextInput
                         className="border-2 border-gray-200 rounded-xl p-4 bg-gray-50 text-gray-800 text-base"
-                        placeholder="Enter phone number"
+                        placeholder={t('profile.enterPhoneNumber')}
                         placeholderTextColor="#9ca3af"
                         value={phoneNumber}
                         onChangeText={setPhoneNumber}
@@ -124,11 +126,11 @@ export default function EditProfile() {
                             <View className="bg-purple-50 p-2 rounded-lg mr-3">
                                 <TabBarIcon icon={Home} color="#a855f7" size={20} />
                             </View>
-                            <Text className="text-gray-700 font-bold text-base">Flat Number</Text>
+                            <Text className="text-gray-700 font-bold text-base">{t('profile.flatNumber')}</Text>
                         </View>
                         <TextInput
                             className="border-2 border-gray-200 rounded-xl p-4 bg-gray-50 text-gray-800 text-base"
-                            placeholder="Enter flat number"
+                            placeholder={t('profile.enterFlatNumber')}
                             placeholderTextColor="#9ca3af"
                             value={flatNumber}
                             onChangeText={setFlatNumber}
@@ -142,7 +144,7 @@ export default function EditProfile() {
                         <View className="bg-gray-200 p-2 rounded-lg mr-3">
                             <TabBarIcon icon={Mail} color="#6b7280" size={20} />
                         </View>
-                        <Text className="text-gray-600 font-bold text-base">Email Address</Text>
+                        <Text className="text-gray-600 font-bold text-base">{t('profile.emailAddress')}</Text>
                     </View>
                     <TextInput
                         className="border-2 border-gray-300 rounded-xl p-4 bg-gray-200 text-gray-600 text-base"
@@ -150,7 +152,7 @@ export default function EditProfile() {
                         editable={false}
                     />
                     <View className="flex-row items-center mt-3 bg-yellow-50 p-3 rounded-lg">
-                        <Text className="text-yellow-700 text-xs">🔒 Email cannot be changed for security reasons</Text>
+                        <Text className="text-yellow-700 text-xs">{t('profile.emailLocked')}</Text>
                     </View>
                 </View>
 
@@ -166,7 +168,7 @@ export default function EditProfile() {
                     ) : (
                         <>
                             <TabBarIcon icon={Save} color="white" size={22} />
-                            <Text className="text-white font-extrabold text-lg ml-2">Save Changes</Text>
+                            <Text className="text-white font-extrabold text-lg ml-2">{t('profile.saveChanges')}</Text>
                         </>
                     )}
                 </TouchableOpacity>

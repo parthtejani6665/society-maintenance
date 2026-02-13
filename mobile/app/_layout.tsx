@@ -1,6 +1,7 @@
 import { Stack, Redirect, useSegments, useRouter } from 'expo-router';
 import { View, ActivityIndicator, Platform } from 'react-native';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { useEffect } from 'react';
 import Constants from 'expo-constants';
 import '../i18n';
@@ -101,7 +102,9 @@ function InitialLayout() {
 export default function RootLayout() {
     return (
         <AuthProvider>
-            <InitialLayout />
+            <ThemeProvider>
+                <InitialLayout />
+            </ThemeProvider>
         </AuthProvider>
     );
 }

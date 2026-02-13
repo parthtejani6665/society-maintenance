@@ -101,7 +101,7 @@ export default function EmergencyContactsScreen() {
                     bg: 'bg-slate-50',
                     icon: Contact2,
                     color: '#64748b',
-                    label: 'Other'
+                    label: t('contacts.other')
                 };
         }
     };
@@ -203,7 +203,7 @@ export default function EmergencyContactsScreen() {
                             <Icon icon={Contact2} color="#cbd5e1" size={40} />
                         </View>
                         <Text className="text-slate-900 font-black text-lg uppercase tracking-tight">{t('contacts.noContacts')}</Text>
-                        <Text className="text-slate-400 font-bold text-xs mt-1">Try a different category or search term</Text>
+                        <Text className="text-slate-400 font-bold text-xs mt-1">{t('contacts.tryDifferent')}</Text>
                     </View>
                 }
                 renderItem={({ item }) => {

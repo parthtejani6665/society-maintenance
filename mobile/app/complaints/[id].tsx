@@ -14,8 +14,10 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
+import { useTranslation } from 'react-i18next';
 
 export default function ComplaintDetails() {
+    const { t } = useTranslation();
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { user } = useAuth();
@@ -40,7 +42,7 @@ export default function ComplaintDetails() {
     const pickResolutionMedia = async (type: 'image' | 'video') => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to share resolution media!');
+            Alert.alert(t('complaints.permissionDenied'), t('complaints.permissionMessage'));
             return;
         }
 
@@ -71,7 +73,7 @@ export default function ComplaintDetails() {
                 setComplaint(data);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to load complaint details');
+            Alert.alert(t('common.error'), t('complaints.loadError'));
             router.back();
         } finally {
             setLoading(false);
@@ -101,8 +103,9 @@ export default function ComplaintDetails() {
             const comment = await commentService.createComment(id as string, newComment.trim());
             setComments([...comments, comment]);
             setNewComment('');
+
         } catch (error) {
-            Alert.alert('Error', 'Failed to post comment');
+            Alert.alert(t('common.error'), t('complaints.postCommentError'));
         } finally {
             setPostingComment(false);
         }
@@ -110,19 +113,19 @@ export default function ComplaintDetails() {
 
     const handleDeleteComment = async (commentId: string) => {
         Alert.alert(
-            'Delete Comment',
-            'Are you sure you want to delete this comment?',
+            t('complaints.deleteComment'),
+            t('complaints.confirmDeleteComment'),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: t('common.delete'),
                     style: 'destructive',
                     onPress: async () => {
                         try {
                             await commentService.deleteComment(commentId);
                             setComments(comments.filter(c => c.id !== commentId));
                         } catch (error) {
-                            Alert.alert('Error', 'Failed to delete comment');
+                            Alert.alert(t('common.error'), t('complaints.deleteCommentError'));
                         }
                     }
                 }
@@ -136,7 +139,7 @@ export default function ComplaintDetails() {
                 const staff = await userService.fetchStaff();
                 setStaffList(staff);
             } catch (error) {
-                Alert.alert('Error', 'Failed to fetch staff list');
+                Alert.alert(t('common.error'), t('complaints.fetchStaffError'));
                 return;
             }
         }
@@ -147,11 +150,11 @@ export default function ComplaintDetails() {
         setAssigning(true);
         try {
             await complaintService.assignComplaint(complaint!.id, staffId);
-            Alert.alert('Success', 'Complaint assigned successfully');
+            Alert.alert(t('common.success'), t('complaints.assignSuccess'));
             setShowStaffModal(false);
             fetchDetails();
         } catch (error) {
-            Alert.alert('Error', 'Failed to assign complaint');
+            Alert.alert(t('common.error'), t('complaints.assignError'));
         } finally {
             setAssigning(false);
         }
@@ -188,11 +191,11 @@ export default function ComplaintDetails() {
                     <TouchableOpacity onPress={() => router.back()} className="mr-4 bg-slate-50 p-2 rounded-xl border border-slate-100">
                         <Icon icon={ChevronLeft} color="#374151" size={24} />
                     </TouchableOpacity>
-                    <Text className="text-xl font-extrabold text-slate-900">Details</Text>
+                    <Text className="text-xl font-extrabold text-slate-900">{t('complaints.details')}</Text>
                 </View>
                 <View className={`px-3 py-1.5 rounded-xl border ${styles.bg} ${styles.border}`}>
                     <Text className={`text-[10px] font-bold uppercase tracking-widest ${styles.text}`}>
-                        {complaint.status.replace('_', ' ')}
+                        {t(`complaints.status.${complaint.status}`)}
                     </Text>
                 </View>
             </View>
@@ -213,7 +216,7 @@ export default function ComplaintDetails() {
                             <View className="bg-slate-200 p-1.5 rounded-lg mr-2">
                                 <Icon icon={FileText} color="#475569" size={16} />
                             </View>
-                            <Text className="text-slate-900 font-extrabold text-sm uppercase tracking-wider">Description</Text>
+                            <Text className="text-slate-900 font-extrabold text-sm uppercase tracking-wider">{t('complaints.description')}</Text>
                         </View>
                         <Text className="text-slate-600 leading-6 text-base">{complaint.description}</Text>
                     </View>
@@ -224,19 +227,26 @@ export default function ComplaintDetails() {
                                 <Icon icon={Info} color={Theme.colors.primary} size={18} />
                             </View>
                             <View>
-                                <Text className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Category</Text>
-                                <Text className="text-blue-900 font-extrabold capitalize">{complaint.category}</Text>
+                                <Text className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">{t('complaints.categoryLabel')}</Text>
+                                <Text className="text-blue-900 font-extrabold capitalize">{t(`complaints.categories.${complaint.category.toLowerCase()}`)}</Text>
                             </View>
                         </View>
 
-                        {complaint.User && (
+                        {(complaint.resident || complaint.User) && (
                             <View className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 flex-row items-center">
                                 <View className="bg-white/80 p-2 rounded-xl mr-3 shadow-sm border border-slate-200">
                                     <Icon icon={UserIcon} color="#475569" size={18} />
                                 </View>
                                 <View className="flex-1">
-                                    <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Raised By</Text>
-                                    <Text className="text-slate-900 font-extrabold" numberOfLines={1}>{complaint.User.fullName}</Text>
+                                    <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('complaints.raisedBy')}</Text>
+                                    <Text className="text-slate-900 font-extrabold" numberOfLines={1}>
+                                        {complaint.resident?.fullName || complaint.User?.fullName}
+                                    </Text>
+                                    {(complaint.resident?.flatNumber || complaint.User?.flatNumber) && (
+                                        <Text className="text-xs text-slate-500 font-bold">
+                                            {complaint.resident?.flatNumber || complaint.User?.flatNumber}
+                                        </Text>
+                                    )}
                                 </View>
                             </View>
                         )}
@@ -245,7 +255,7 @@ export default function ComplaintDetails() {
                     {/* Complaint Media Attachments */}
                     {(complaint.imageUrl || complaint.videoUrl) && (
                         <View className="mb-2">
-                            <Text className="text-slate-900 font-extrabold text-sm uppercase tracking-wider mb-4">Attachments</Text>
+                            <Text className="text-slate-900 font-extrabold text-sm uppercase tracking-wider mb-4">{t('complaints.attachments')}</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
                                 {complaint.imageUrl && (
                                     <TouchableOpacity
@@ -259,7 +269,7 @@ export default function ComplaintDetails() {
                                             resizeMode="cover"
                                         />
                                         <View className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-lg">
-                                            <Text className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Photo</Text>
+                                            <Text className="text-slate-900 text-[10px] font-black uppercase tracking-widest">{t('complaints.photo')}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 )}
@@ -283,7 +293,7 @@ export default function ComplaintDetails() {
                                             </View>
                                         </View>
                                         <View className="absolute bottom-3 left-3 bg-blue-800/90 px-2 py-1 rounded-lg">
-                                            <Text className="text-white text-[10px] font-black uppercase tracking-widest">Video</Text>
+                                            <Text className="text-white text-[10px] font-black uppercase tracking-widest">{t('complaints.video')}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 )}
@@ -299,7 +309,7 @@ export default function ComplaintDetails() {
                             <View className="bg-emerald-100 p-2 rounded-xl mr-3">
                                 <Icon icon={ShieldCheck} color={Theme.colors.status.success} size={20} />
                             </View>
-                            <Text className="text-emerald-900 font-extrabold text-lg">Resolution Summary</Text>
+                            <Text className="text-emerald-900 font-extrabold text-lg">{t('complaints.resolutionSummary')}</Text>
                         </View>
 
                         {complaint.resolutionNote && (
@@ -341,7 +351,7 @@ export default function ComplaintDetails() {
                         {complaint.resolvedAt && (
                             <View className="flex-row items-center justify-end">
                                 <Text className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
-                                    Resolved on {new Date(complaint.resolvedAt).toLocaleDateString()}
+                                    {t('complaints.resolvedOn', { date: new Date(complaint.resolvedAt).toLocaleDateString() })}
                                 </Text>
                             </View>
                         )}
@@ -351,7 +361,7 @@ export default function ComplaintDetails() {
                         {user?.role === 'admin' && (
                             <View className="mb-6 gap-3">
                                 <Button
-                                    title={complaint.assignedStaff ? "Change Assigned Staff" : "Assign to Staff"}
+                                    title={complaint.assignedStaff ? t('complaints.changeStaff') : t('complaints.assignStaff')}
                                     variant="primary"
                                     icon={<Icon icon={UserPlus} color="white" size={20} />}
                                     onPress={handleOpenAssignModal}
@@ -363,7 +373,7 @@ export default function ComplaintDetails() {
                                             <Icon icon={UserIcon} color={Theme.colors.primary} size={20} />
                                         </View>
                                         <View>
-                                            <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Assigned Staff</Text>
+                                            <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('complaints.assignedStaff')}</Text>
                                             <Text className="text-slate-900 font-extrabold text-base">{complaint.assignedStaff.fullName}</Text>
                                         </View>
                                     </Card>
@@ -373,8 +383,8 @@ export default function ComplaintDetails() {
 
                         {user?.role === 'staff' && complaint.status === 'in_progress' && (
                             <Card className="mb-6 p-6 border-l-4 border-amber-500">
-                                <Text className="text-slate-900 font-black text-lg mb-4">Staff Action Required</Text>
-                                <Text className="text-slate-500 text-sm mb-6">Attach evidence of completion and mark the task as resolved for verification.</Text>
+                                <Text className="text-slate-900 font-black text-lg mb-4">{t('complaints.staffActionRequired')}</Text>
+                                <Text className="text-slate-500 text-sm mb-6">{t('complaints.staffActionSubtitle')}</Text>
 
                                 <View className="flex-row gap-4 mb-6">
                                     <TouchableOpacity
@@ -383,7 +393,7 @@ export default function ComplaintDetails() {
                                     >
                                         <Icon icon={ImageIcon} color={resImage ? Theme.colors.status.success : "#94a3b8"} size={24} />
                                         <Text className={`text-[10px] font-black uppercase tracking-widest mt-2 ${resImage ? 'text-emerald-700' : 'text-slate-400'}`}>
-                                            {resImage ? 'Photo Added' : 'Add Photo'}
+                                            {resImage ? t('complaints.photoAdded') : t('complaints.addPhoto')}
                                         </Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -392,23 +402,23 @@ export default function ComplaintDetails() {
                                     >
                                         <Icon icon={VideoIcon} color={resVideo ? Theme.colors.status.success : "#94a3b8"} size={24} />
                                         <Text className={`text-[10px] font-black uppercase tracking-widest mt-2 ${resVideo ? 'text-emerald-700' : 'text-slate-400'}`}>
-                                            {resVideo ? 'Video Added' : 'Add Video'}
+                                            {resVideo ? t('complaints.videoAdded') : t('complaints.addVideo')}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 <Button
-                                    title="Mark as Resolved"
+                                    title={t('complaints.markResolved')}
                                     onPress={() => {
-                                        Alert.alert('Confirm Resolution', 'Are you sure this issue is solved?', [
-                                            { text: 'Cancel', style: 'cancel' },
+                                        Alert.alert(t('complaints.confirmResolution'), t('complaints.confirmResolutionMessage'), [
+                                            { text: t('common.cancel'), style: 'cancel' },
                                             {
-                                                text: 'Yes, Resolve', onPress: async () => {
+                                                text: t('complaints.yesResolve'), onPress: async () => {
                                                     setLoading(true);
                                                     try {
                                                         const formData = new FormData();
                                                         formData.append('status', 'resolved');
-                                                        formData.append('resolutionNote', 'Resolved by staff via mobile app');
+                                                        formData.append('resolutionNote', t('complaints.resolvedDefault'));
                                                         if (resImage) {
                                                             const filename = resImage.split('/').pop();
                                                             const match = /\.(\w+)$/.exec(filename || '');
@@ -422,10 +432,10 @@ export default function ComplaintDetails() {
                                                             formData.append('video', { uri: resVideo, name: filename, type } as any);
                                                         }
                                                         await complaintService.updateStatus(complaint.id, formData);
-                                                        Alert.alert('Success', 'Complaint marked as resolved');
+                                                        Alert.alert(t('common.success'), t('complaints.resolvedSuccess'));
                                                         fetchDetails();
                                                     } catch (e) {
-                                                        Alert.alert('Error', 'Update failed');
+                                                        Alert.alert(t('common.error'), t('complaints.updateError'));
                                                     } finally { setLoading(false); }
                                                 }
                                             }
@@ -446,17 +456,17 @@ export default function ComplaintDetails() {
                             <View className="bg-slate-100 p-2 rounded-xl mr-3">
                                 <Icon icon={MessageSquare} color="#475569" size={20} />
                             </View>
-                            <Text className="text-slate-900 font-extrabold text-lg">Discussion</Text>
+                            <Text className="text-slate-900 font-extrabold text-lg">{t('complaints.discussion')}</Text>
                         </View>
                         <View className="bg-blue-50 px-3 py-1 rounded-full">
-                            <Text className="text-blue-700 text-xs font-black">{comments.length} MSG</Text>
+                            <Text className="text-blue-700 text-xs font-black">{comments.length} {t('complaints.msg')}</Text>
                         </View>
                     </View>
 
                     {comments.length === 0 ? (
                         <View className="items-center py-10 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
                             <Icon icon={MessageSquare} color="#cbd5e1" size={40} />
-                            <Text className="text-slate-400 font-bold mt-4">Start the conversation</Text>
+                            <Text className="text-slate-400 font-bold mt-4">{t('complaints.startConversation')}</Text>
                         </View>
                     ) : (
                         <View>
@@ -491,7 +501,7 @@ export default function ComplaintDetails() {
                     <View className="mt-8 flex-row items-end bg-slate-50 rounded-3xl p-2 border border-slate-100">
                         <TextInput
                             className="flex-1 px-4 py-3 text-slate-800 text-sm max-h-24"
-                            placeholder="Share an update..."
+                            placeholder={t('complaints.shareUpdate')}
                             value={newComment}
                             onChangeText={setNewComment}
                             multiline
@@ -517,7 +527,7 @@ export default function ComplaintDetails() {
                 <View className="flex-1 justify-end bg-slate-900/60">
                     <View className="bg-white rounded-t-[40px] p-8 h-2/3 shadow-2xl">
                         <View className="flex-row justify-between items-center mb-8">
-                            <Text className="text-2xl font-black text-slate-900">Select Staff</Text>
+                            <Text className="text-2xl font-black text-slate-900">{t('complaints.selectStaff')}</Text>
                             <TouchableOpacity onPress={() => setShowStaffModal(false)} className="bg-slate-50 p-2 rounded-xl border border-slate-100">
                                 <Icon icon={X} color="#374151" size={24} />
                             </TouchableOpacity>

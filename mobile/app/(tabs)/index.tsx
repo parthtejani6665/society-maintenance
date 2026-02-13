@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Phone, Megaphone, CheckCircle2, Calendar, Users,
     FileText, LogOut, ChevronRight, BarChart2,
-    PlusCircle, ShieldAlert, CreditCard
+    PlusCircle, ShieldAlert, CreditCard, IndianRupee
 } from 'lucide-react-native';
 import { Card } from '../../components/Card';
 import { Theme } from '../../constants/Theme';
@@ -129,7 +129,7 @@ export default function Dashboard() {
                     <Text className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">{t('dashboard.yourRole')}</Text>
                     <Text className="text-xl font-extrabold text-white capitalize">{user?.role}</Text>
                     {user?.flatNumber && (
-                        <Text className="text-blue-200 text-sm font-medium">Room: {user.flatNumber}</Text>
+                        <Text className="text-blue-200 text-sm font-medium">{t('dashboard.flatLabel')} {user.flatNumber}</Text>
                     )}
                 </View>
                 <TouchableOpacity
@@ -166,7 +166,7 @@ export default function Dashboard() {
                     />
                     <QuickAction
                         icon={CreditCard}
-                        label="Payment"
+                        label={t('dashboard.payment')}
                         color={Theme.colors.status.success}
                         onPress={() => router.push('/maintenance')}
                     />
@@ -182,13 +182,19 @@ export default function Dashboard() {
                         color={Theme.colors.status.danger}
                         onPress={() => router.push('/contacts')}
                     />
+                    <QuickAction
+                        icon={IndianRupee}
+                        label={t('dashboard.financials')}
+                        color="#059669"
+                        onPress={() => router.push('/financials')}
+                    />
                 </View>
             </View>
 
             {/* Management Section for Admins */}
             {user?.role === 'admin' && (
                 <View>
-                    <Text className="text-xl font-extrabold text-slate-900 mb-4">Management</Text>
+                    <Text className="text-xl font-extrabold text-slate-900 mb-4">{t('dashboard.management')}</Text>
                     <View className="gap-3">
                         <TouchableOpacity onPress={() => router.push('/users')} activeOpacity={0.7}>
                             <Card className="flex-row items-center p-4">
@@ -196,8 +202,8 @@ export default function Dashboard() {
                                     <Icon icon={Users} color={Theme.colors.status.info} size={22} />
                                 </View>
                                 <View className="flex-1">
-                                    <Text className="text-slate-900 font-bold text-base">Users & Residents</Text>
-                                    <Text className="text-slate-500 text-xs">Manage approvals and roles</Text>
+                                    <Text className="text-slate-900 font-bold text-base">{t('dashboard.users')}</Text>
+                                    <Text className="text-slate-500 text-xs">{t('dashboard.usersSubtitle')}</Text>
                                 </View>
                                 <Icon icon={ChevronRight} color="#cbd5e1" size={20} />
                             </Card>

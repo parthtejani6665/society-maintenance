@@ -8,8 +8,10 @@ import { Input } from '../../components/Input';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
+    const { t } = useTranslation();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,12 +28,12 @@ export default function Register() {
 
     const handleRegister = async () => {
         if (!fullName || !email || !password || !confirmPassword || !phoneNumber || !flatNumber) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert(t('common.error'), 'Please fill in all fields');
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+            Alert.alert(t('common.error'), t('auth.passwordMismatch'));
             return;
         }
 
@@ -47,11 +49,11 @@ export default function Register() {
             const { token, user } = response.data;
             await signIn(token, user);
 
-            Alert.alert('Success', 'Account created successfully!');
+            Alert.alert(t('common.success'), t('auth.accountCreated'));
             // Navigation handled by auth context state change or we can force it
             // router.replace('/(tabs)'); 
         } catch (error: any) {
-            Alert.alert('Registration Failed', error.response?.data?.message || 'Something went wrong');
+            Alert.alert(t('auth.registrationFailed'), error.response?.data?.message || 'Something went wrong');
         } finally {
             setLoading(false);
         }
@@ -73,16 +75,16 @@ export default function Register() {
                         <View className="bg-blue-800 w-20 h-20 rounded-2xl items-center justify-center mb-4 shadow-xl shadow-blue-500/30">
                             <Icon icon={Building2} color="white" size={40} />
                         </View>
-                        <Text className="text-3xl font-extrabold text-slate-900 mb-1">Create Account</Text>
+                        <Text className="text-3xl font-extrabold text-slate-900 mb-1">{t('auth.createAccount')}</Text>
                         <Text className="text-slate-500 text-center px-4">
-                            Join Digital Dwell Society
+                            {t('auth.joinSubtitle')}
                         </Text>
                     </View>
 
                     {/* Registration Form */}
                     <Card className="shadow-2xl shadow-slate-300">
                         <Input
-                            label="Full Name"
+                            label={t('profile.fullName')}
                             placeholder="John Doe"
                             value={fullName}
                             onChangeText={setFullName}
@@ -90,7 +92,7 @@ export default function Register() {
                         />
 
                         <Input
-                            label="Email Address"
+                            label={t('profile.emailAddress')}
                             placeholder="your.email@example.com"
                             value={email}
                             onChangeText={setEmail}
@@ -102,7 +104,7 @@ export default function Register() {
                         <View className="flex-row gap-4">
                             <View className="flex-1">
                                 <Input
-                                    label="Phone"
+                                    label={t('profile.phoneNumber')}
                                     placeholder="9876543210"
                                     value={phoneNumber}
                                     onChangeText={setPhoneNumber}
@@ -112,7 +114,7 @@ export default function Register() {
                             </View>
                             <View className="flex-1">
                                 <Input
-                                    label="Flat No"
+                                    label={t('profile.flatNumber')}
                                     placeholder="A-101"
                                     value={flatNumber}
                                     onChangeText={setFlatNumber}
@@ -124,7 +126,7 @@ export default function Register() {
 
                         <View>
                             <Input
-                                label="Password"
+                                label={t('auth.password')}
                                 placeholder="••••••••"
                                 value={password}
                                 onChangeText={setPassword}
@@ -142,7 +144,7 @@ export default function Register() {
 
                         <View>
                             <Input
-                                label="Confirm Password"
+                                label={t('auth.confirmPassword')}
                                 placeholder="••••••••"
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
@@ -160,16 +162,16 @@ export default function Register() {
                         </View>
 
                         <Button
-                            title="Sign Up"
+                            title={t('auth.signUp')}
                             onPress={handleRegister}
                             loading={loading}
                             className="bg-blue-800 mb-6"
                         />
 
                         <View className="flex-row justify-center items-center">
-                            <Text className="text-slate-600">Already have an account? </Text>
+                            <Text className="text-slate-600">{t('auth.haveAccount')} </Text>
                             <TouchableOpacity onPress={() => router.back()}>
-                                <Text className="text-blue-800 font-bold">Sign In</Text>
+                                <Text className="text-blue-800 font-bold">{t('auth.signIn')}</Text>
                             </TouchableOpacity>
                         </View>
                     </Card>

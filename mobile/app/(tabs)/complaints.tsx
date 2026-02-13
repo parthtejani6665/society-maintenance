@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, TextInput, ScrollView, Image } from 'react-native';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Plus, AlertCircle, CheckCircle2, Clock, Search, X, ChevronRight, Filter } from 'lucide-react-native';
+import { Plus, AlertCircle, CheckCircle2, Clock, Search, X, ChevronRight, Filter, User as UserIcon } from 'lucide-react-native';
 import { complaintService } from '../../services/complaintService';
 import { Complaint } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +11,10 @@ import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTranslation } from 'react-i18next';
+
 export default function Complaints() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { user } = useAuth();
     const { status } = useLocalSearchParams();
@@ -107,13 +110,22 @@ export default function Complaints() {
                                     </Text>
                                     <View className={`px-2.5 py-1 rounded-lg border ${styles.bg} ${styles.border}`}>
                                         <Text className={`text-[10px] font-bold uppercase tracking-wider ${styles.text}`}>
-                                            {item.status.replace('_', ' ')}
+                                            {t(`complaints.status.${item.status}`)}
                                         </Text>
                                     </View>
                                 </View>
                                 <Text className="text-slate-500 text-sm mt-1" numberOfLines={2}>
                                     {item.description}
                                 </Text>
+                                {(user?.role === 'admin' || user?.role === 'staff') && (item.resident || item.User) && (
+                                    <View className="mt-2 flex-row items-center">
+                                        <Icon icon={UserIcon} color="#64748b" size={12} />
+                                        <Text className="text-slate-600 text-xs font-bold ml-1">
+                                            {item.resident?.fullName || item.User?.fullName}
+                                            <Text className="text-slate-400 font-medium"> • {item.resident?.flatNumber || item.User?.flatNumber}</Text>
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
                             <View className="flex-row justify-between items-center mt-3">
                                 <View className="flex-row items-center">
@@ -142,7 +154,7 @@ export default function Complaints() {
                 style={{ paddingTop: insets.top + 10 }}
             >
                 <View className="flex-row justify-between items-center mb-6">
-                    <Text className="text-3xl font-extrabold text-slate-900">Complaints</Text>
+                    <Text className="text-3xl font-extrabold text-slate-900">{t('complaints.title')}</Text>
                     <TouchableOpacity className="p-2 bg-slate-50 rounded-xl border border-slate-100">
                         <Icon icon={Filter} color={Theme.colors.primary} size={20} />
                     </TouchableOpacity>
@@ -153,7 +165,7 @@ export default function Complaints() {
                     <Icon icon={Search} color="#94a3b8" size={18} />
                     <TextInput
                         className="flex-1 ml-3 text-slate-700 font-medium h-10"
-                        placeholder="Search complaints..."
+                        placeholder={t('complaints.searchPlaceholder')}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         placeholderTextColor="#94a3b8"
@@ -179,7 +191,7 @@ export default function Complaints() {
                         >
                             <Text className={`capitalize text-xs font-bold tracking-wide ${selectedCategory === cat ? 'text-white' : 'text-slate-600'
                                 }`}>
-                                {cat}
+                                {t(`complaints.categories.${cat.toLowerCase()}`)}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -204,9 +216,9 @@ export default function Complaints() {
                             <View className="bg-slate-100 p-8 rounded-full mb-6">
                                 <Icon icon={Search} color="#94a3b8" size={48} />
                             </View>
-                            <Text className="text-slate-900 text-xl font-extrabold mb-2">No results found</Text>
+                            <Text className="text-slate-900 text-xl font-extrabold mb-2">{t('complaints.noResults')}</Text>
                             <Text className="text-slate-500 text-center px-12 leading-5">
-                                We couldn't find any complaints matching your current filters.
+                                {t('complaints.noResultsSubtitle')}
                             </Text>
                         </View>
                     }

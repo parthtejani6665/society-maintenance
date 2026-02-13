@@ -105,7 +105,7 @@ export default function AmenityBookingScreen() {
             const startHour = parseInt(selectedSlot.split(':')[0]);
             const endTime = `${(startHour + 1).toString().padStart(2, '0')}:00`;
 
-            await bookingService.createBooking({
+            const booking = await bookingService.createBooking({
                 amenityId: amenity.id,
                 date: dateStr,
                 startTime: selectedSlot,
@@ -114,8 +114,10 @@ export default function AmenityBookingScreen() {
 
             Alert.alert(
                 t('common.success'),
-                amenity.requiresApproval ? t('amenities.bookingSuccess') + ' (Approval needed)' : t('amenities.bookingSuccess'),
-                [{ text: 'OK', onPress: () => router.push('/amenities/my-bookings') }]
+                booking.status === 'confirmed'
+                    ? t('amenities.bookingSuccess')
+                    : t('amenities.bookingSuccess') + ' (' + t('amenities.approvalRequired') + ')',
+                [{ text: t('common.ok'), onPress: () => router.push('/amenities/my-bookings') }]
             );
         } catch (error: any) {
             Alert.alert(t('common.error'), error.response?.data?.message || t('amenities.bookingError'));
@@ -155,7 +157,7 @@ export default function AmenityBookingScreen() {
                 >
                     <Icon icon={ChevronLeft} color="#0f172a" size={24} />
                 </TouchableOpacity>
-                <Text className="text-xl font-black text-slate-900 tracking-tight">Book Facility</Text>
+                <Text className="text-xl font-black text-slate-900 tracking-tight">{t('amenities.bookFacility')}</Text>
             </View>
 
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
@@ -165,18 +167,18 @@ export default function AmenityBookingScreen() {
                         <Text className="text-3xl font-black text-slate-900 leading-tight mb-2">{amenity.name}</Text>
                         <View className="flex-row items-center mb-4">
                             <Icon icon={MapPin} color="#94a3b8" size={14} />
-                            <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1">Main Clubhouse • Ground Floor</Text>
+                            <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1">{t('amenities.location')}</Text>
                         </View>
                         <View className="flex-row items-center bg-blue-50 self-start px-3 py-1.5 rounded-xl border border-blue-100">
                             <Icon icon={ShieldCheck} color={Theme.colors.primary} size={14} />
                             <Text className="text-blue-700 text-[10px] font-black uppercase tracking-widest ml-2">
-                                {amenity.requiresApproval ? 'Approval Required' : 'Instant Confirmation'}
+                                {amenity.requiresApproval ? t('amenities.approvalRequired') : t('amenities.instantConfirmation')}
                             </Text>
                         </View>
                     </Card>
 
                     {/* Enhanced Date Picker */}
-                    <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 ml-1">Select Date</Text>
+                    <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 ml-1">{t('amenities.selectDate')}</Text>
                     <Card className="p-2 mb-6 shadow-sm shadow-slate-200/50">
                         <Calendar
                             current={getLocalDateString(selectedDate)}
@@ -212,10 +214,10 @@ export default function AmenityBookingScreen() {
 
                     {/* Slots Grid */}
                     <View className="flex-row items-center justify-between mb-4 px-1">
-                        <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Available Slots</Text>
+                        <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest">{t('amenities.availableSlots')}</Text>
                         <View className="flex-row items-center">
                             <Icon icon={Users} color="#94a3b8" size={12} />
-                            <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1">Limit: {amenity.capacity}</Text>
+                            <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest ml-1">{t('amenities.limit', { count: amenity.capacity })}</Text>
                         </View>
                     </View>
 
@@ -228,9 +230,9 @@ export default function AmenityBookingScreen() {
                             <View className="bg-white w-16 h-16 rounded-full items-center justify-center mb-4 shadow-sm border border-slate-100">
                                 <Icon icon={Clock} color="#cbd5e1" size={32} />
                             </View>
-                            <Text className="text-slate-900 font-black text-base uppercase tracking-tight">No Slots Available</Text>
+                            <Text className="text-slate-900 font-black text-base uppercase tracking-tight">{t('amenities.noSlots')}</Text>
                             <Text className="text-slate-400 font-bold text-xs mt-1 text-center">
-                                Operating hours: {amenity.startTime} - {amenity.endTime}
+                                {t('amenities.operatingHoursRange', { start: amenity.startTime, end: amenity.endTime })}
                             </Text>
                         </Card>
                     ) : (
@@ -272,7 +274,7 @@ export default function AmenityBookingScreen() {
                                             {time}
                                         </Text>
                                         {isBooked && (
-                                            <Text className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">Booked</Text>
+                                            <Text className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{t('amenities.booked')}</Text>
                                         )}
                                     </TouchableOpacity>
                                 );
@@ -286,11 +288,9 @@ export default function AmenityBookingScreen() {
                             <Icon icon={Info} color={Theme.colors.primary} size={20} />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-slate-900 font-bold text-sm mb-1">Booking Policy</Text>
+                            <Text className="text-slate-900 font-bold text-sm mb-1">{t('amenities.bookingPolicy')}</Text>
                             <Text className="text-slate-500 text-xs leading-5 font-bold">
-                                • Bookings are for 1-hour slots.
-                                • Cancellation allowed 24h prior.
-                                • Security clearance required at venue.
+                                {t('amenities.policyDetails')}
                             </Text>
                         </View>
                     </View>

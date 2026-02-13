@@ -45,7 +45,7 @@ export default function UserDetails() {
             }
         } catch (error) {
             console.error('Failed to load user details:', error);
-            Alert.alert(t('common.error'), 'Failed to load user details');
+            Alert.alert(t('common.error'), t('users.loadFailed'));
             router.back();
         } finally {
             setLoading(false);
@@ -79,11 +79,11 @@ export default function UserDetails() {
                 role: editRole,
                 isActive: editIsActive
             });
-            Alert.alert(t('common.success'), 'User updated successfully');
+            Alert.alert(t('common.success'), t('users.updateSuccess'));
             setShowEditModal(false);
             fetchDetails(); // Refresh details
         } catch (error: any) {
-            Alert.alert(t('common.error'), error.response?.data?.message || 'Failed to update user');
+            Alert.alert(t('common.error'), error.response?.data?.message || t('users.updateFailed'));
         } finally {
             setUpdating(false);
         }
@@ -117,7 +117,7 @@ export default function UserDetails() {
     if (!user) {
         return (
             <View className="flex-1 justify-center items-center bg-slate-50">
-                <Text className="text-slate-400 font-bold">User not found</Text>
+                <Text className="text-slate-400 font-bold">{t('users.userNotFound')}</Text>
             </View>
         );
     }
@@ -167,7 +167,7 @@ export default function UserDetails() {
                 {/* Stats Card */}
                 <View className="flex-row gap-4 mb-6">
                     <View className="flex-1 bg-white p-5 rounded-[32px] shadow-sm border border-slate-100 items-center">
-                        <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-1">{t('users.status')}</Text>
+                        <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-1">{t('users.statusLabel')}</Text>
                         <Text className={`text-sm font-black uppercase ${user.isActive ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {user.isActive ? t('common.active') : t('common.inactive')}
                         </Text>
@@ -198,7 +198,7 @@ export default function UserDetails() {
                         </View>
                         <View className="flex-1">
                             <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">{t('users.phone')}</Text>
-                            <Text className="text-slate-900 font-extrabold text-base leading-tight">{user.phoneNumber || 'Not provided'}</Text>
+                            <Text className="text-slate-900 font-extrabold text-base leading-tight">{user.phoneNumber || t('common.notProvided')}</Text>
                         </View>
                     </View>
 
@@ -207,7 +207,7 @@ export default function UserDetails() {
                             <Icon icon={Calendar} color="#64748b" size={20} />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">Member Since</Text>
+                            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">{t('users.memberSince')}</Text>
                             <Text className="text-slate-900 font-extrabold text-base leading-tight">
                                 {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                             </Text>
@@ -226,7 +226,7 @@ export default function UserDetails() {
                         </View>
                         <View className="flex-1">
                             <Text className="text-slate-900 font-black text-lg">{t('users.updateUser')}</Text>
-                            <Text className="text-slate-400 font-bold text-xs">Modify user details & role</Text>
+                            <Text className="text-slate-400 font-bold text-xs">{t('users.modifyDetails')}</Text>
                         </View>
                         <Icon icon={ChevronRight} color="#cbd5e1" size={20} />
                     </TouchableOpacity>
@@ -243,7 +243,7 @@ export default function UserDetails() {
                         </View>
                         <View className="flex-1">
                             <Text className="text-rose-900 font-black text-lg">{t('users.deleteUser')}</Text>
-                            <Text className="text-rose-400 font-bold text-xs uppercase tracking-widest">Permanent Action</Text>
+                            <Text className="text-rose-400 font-bold text-xs uppercase tracking-widest">{t('users.permanentAction')}</Text>
                         </View>
                         <Icon icon={AlertCircle} color="#fda4af" size={20} />
                     </TouchableOpacity>
@@ -266,7 +266,7 @@ export default function UserDetails() {
                         <View className="w-12 h-1.5 bg-slate-100 rounded-full self-center mb-6" />
 
                         <View className="flex-row justify-between items-center mb-6">
-                            <Text className="text-2xl font-black text-slate-900">Edit User</Text>
+                            <Text className="text-2xl font-black text-slate-900">{t('users.editUser')}</Text>
                             <TouchableOpacity onPress={() => setShowEditModal(false)} className="bg-slate-50 p-2 rounded-full">
                                 <Icon icon={X} color="#64748b" size={24} />
                             </TouchableOpacity>
@@ -274,13 +274,13 @@ export default function UserDetails() {
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <Input
-                                label="Full Name"
+                                label={t('users.fullName')}
                                 value={editFullName}
                                 onChangeText={setEditFullName}
                                 icon={<Icon icon={UserIcon} color="#64748b" size={20} />}
                             />
                             <Input
-                                label="Phone Number"
+                                label={t('users.phone')}
                                 value={editPhoneNumber}
                                 onChangeText={setEditPhoneNumber}
                                 keyboardType="phone-pad"
@@ -288,14 +288,14 @@ export default function UserDetails() {
                             />
                             {editRole === 'resident' && (
                                 <Input
-                                    label="Flat Number"
+                                    label={t('users.flatNumber')}
                                     value={editFlatNumber}
                                     onChangeText={setEditFlatNumber}
                                     icon={<Icon icon={Home} color="#64748b" size={20} />}
                                 />
                             )}
 
-                            <Text className="text-slate-700 font-semibold mb-2 text-sm ml-1 mt-2">Role</Text>
+                            <Text className="text-slate-700 font-semibold mb-2 text-sm ml-1 mt-2">{t('users.roleLabel')}</Text>
                             <View className="flex-row gap-3 mb-4">
                                 {['admin', 'staff', 'resident'].map((r) => (
                                     <TouchableOpacity
@@ -303,29 +303,29 @@ export default function UserDetails() {
                                         onPress={() => setEditRole(r)}
                                         className={`flex-1 py-3 items-center rounded-xl border ${editRole === r ? 'bg-blue-50 border-blue-500' : 'bg-slate-50 border-slate-200'}`}
                                     >
-                                        <Text className={`font-bold capitalize ${editRole === r ? 'text-blue-700' : 'text-slate-500'}`}>{r}</Text>
+                                        <Text className={`font-bold capitalize ${editRole === r ? 'text-blue-700' : 'text-slate-500'}`}>{t(`users.${r}`)}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
 
-                            <Text className="text-slate-700 font-semibold mb-2 text-sm ml-1 mt-2">Status</Text>
+                            <Text className="text-slate-700 font-semibold mb-2 text-sm ml-1 mt-2">{t('users.statusLabel')}</Text>
                             <View className="flex-row gap-3 mb-6">
                                 <TouchableOpacity
                                     onPress={() => setEditIsActive(true)}
                                     className={`flex-1 py-3 items-center rounded-xl border ${editIsActive ? 'bg-emerald-50 border-emerald-500' : 'bg-slate-50 border-slate-200'}`}
                                 >
-                                    <Text className={`font-bold ${editIsActive ? 'text-emerald-700' : 'text-slate-500'}`}>Active</Text>
+                                    <Text className={`font-bold ${editIsActive ? 'text-emerald-700' : 'text-slate-500'}`}>{t('common.active')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={() => setEditIsActive(false)}
                                     className={`flex-1 py-3 items-center rounded-xl border ${!editIsActive ? 'bg-rose-50 border-rose-500' : 'bg-slate-50 border-slate-200'}`}
                                 >
-                                    <Text className={`font-bold ${!editIsActive ? 'text-rose-700' : 'text-slate-500'}`}>Inactive</Text>
+                                    <Text className={`font-bold ${!editIsActive ? 'text-rose-700' : 'text-slate-500'}`}>{t('common.inactive')}</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <Button
-                                title="Update User"
+                                title={t('users.updateUser')}
                                 onPress={handleUpdate}
                                 loading={updating}
                                 className="bg-blue-800 mb-8"

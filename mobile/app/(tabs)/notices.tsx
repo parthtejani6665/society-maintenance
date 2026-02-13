@@ -161,7 +161,7 @@ export default function NoticesScreen() {
                                         <View>
                                             <Text className="text-slate-400 font-black text-[8px] uppercase tracking-widest mb-0.5">{t('notices.management')}</Text>
                                             <Text className="text-slate-900 font-black text-xs">
-                                                {item.author?.fullName || 'Official Admin'}
+                                                {item.author?.fullName || t('notices.officialAdmin')}
                                             </Text>
                                         </View>
                                     </View>

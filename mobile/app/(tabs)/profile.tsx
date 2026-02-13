@@ -29,7 +29,7 @@ export default function Profile() {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (permissionResult.granted === false) {
-            Alert.alert("Permission Required", "You've refused to allow this app to access your photos!");
+            Alert.alert(t('common.permissionRequired'), t('profile.photoPermissionDenied'));
             return;
         }
 
@@ -49,7 +49,7 @@ export default function Profile() {
         setUploading(true);
         try {
             const response = await userService.uploadProfileImage(uri);
-            Alert.alert("Success", "Profile photo updated successfully!");
+            Alert.alert(t('common.success'), t('profile.photoUpdateSuccess'));
 
             // Update local user state with new avatar
             // Update local user state with new avatar
@@ -59,7 +59,7 @@ export default function Profile() {
             }
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Failed to upload profile photo.");
+            Alert.alert(t('common.error'), t('profile.photoUploadError'));
         } finally {
             setUploading(false);
         }
@@ -86,7 +86,7 @@ export default function Profile() {
                 style={{ paddingTop: insets.top + 10 }}
             >
                 <Text className="text-3xl font-black text-slate-900">Profile</Text>
-                <Text className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Account & Preferences</Text>
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">{t('profile.accountPreferences')}</Text>
             </View>
 
             <ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}>
@@ -125,7 +125,7 @@ export default function Profile() {
                         </View>
                         {user?.flatNumber && (
                             <View className="bg-white border border-slate-200 px-4 py-1.5 rounded-full">
-                                <Text className="text-slate-600 font-black text-[10px] uppercase tracking-widest">Flat {user.flatNumber}</Text>
+                                <Text className="text-slate-600 font-black text-[10px] uppercase tracking-widest">{t('dashboard.flat')} {user.flatNumber}</Text>
                             </View>
                         )}
                     </View>
@@ -133,24 +133,18 @@ export default function Profile() {
 
                 {/* Settings Card */}
                 <Card className="p-6 mb-6">
-                    <Text className="text-slate-900 font-black text-lg mb-4">Account Settings</Text>
+                    <Text className="text-slate-900 font-black text-lg mb-4">{t('profile.accountSettings')}</Text>
                     <SettingItem
                         icon={UserIcon}
                         label={t('profile.editProfile')}
                         onPress={() => router.push('/profile/edit')}
                         color="#2563eb"
                     />
-                    <View className="h-[1px] bg-slate-100 ml-14" />
-                    <SettingItem
-                        icon={Bell}
-                        label="Notifications"
-                        onPress={() => { }}
-                        color="#f59e0b"
-                    />
+
                     <View className="h-[1px] bg-slate-100 ml-14" />
                     <SettingItem
                         icon={CreditCard}
-                        label="Payment History"
+                        label={t('profile.paymentHistory')}
                         onPress={() => router.push('/(tabs)/maintenance')}
                         color="#10b981"
                     />

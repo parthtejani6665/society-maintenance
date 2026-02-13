@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, RefreshControl } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, RefreshControl, Linking } from 'react-native';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { userService } from '../../services/userService';
-import { ChevronRight, Search, User as UserIcon, Shield, Briefcase, Home, Filter, X } from 'lucide-react-native';
+import { ChevronRight, ChevronLeft, Search, User as UserIcon, Shield, Briefcase, Home, Filter, X, Phone, MessageCircle } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
@@ -13,6 +13,7 @@ interface User {
     fullName: string;
     email: string;
     role: string;
+    phoneNumber?: string;
     flatNumber?: string;
     isActive: boolean;
 }
@@ -98,7 +99,7 @@ export default function UsersList() {
                         <Text className="text-lg font-black text-slate-900 leading-tight mb-0.5">{item.fullName}</Text>
                         <Text className="text-slate-400 font-bold text-xs mb-2 tracking-tight">{item.email}</Text>
 
-                        <View className="flex-row items-center">
+                        <View className="flex-row items-center mb-2">
                             <View className={`${roleBg} px-2.5 py-1 rounded-lg mr-2`}>
                                 <Text className="text-[9px] font-black uppercase tracking-widest" style={{ color: roleColor }}>
                                     {t(`users.${item.role}`)}
@@ -113,6 +114,26 @@ export default function UsersList() {
                                 </View>
                             )}
                         </View>
+
+                        {/* Contact Actions for Admin */}
+                        {item.phoneNumber && (
+                            <View className="flex-row gap-2 mt-1">
+                                <TouchableOpacity
+                                    onPress={() => Linking.openURL(`tel:${item.phoneNumber}`)}
+                                    className="bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 flex-row items-center"
+                                >
+                                    <Icon icon={Phone} color="#059669" size={12} />
+                                    <Text className="text-emerald-700 text-[10px] font-bold ml-1.5 uppercase tracking-wide">{t('users.call')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => Linking.openURL(`whatsapp://send?phone=${item.phoneNumber}`)}
+                                    className="bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex-row items-center"
+                                >
+                                    <Icon icon={MessageCircle} color="#16a34a" size={12} />
+                                    <Text className="text-green-700 text-[10px] font-bold ml-1.5 uppercase tracking-wide">{t('users.whatsapp')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </View>
 
                     <View className="w-10 h-10 bg-slate-50 rounded-xl items-center justify-center border border-slate-100">
@@ -132,8 +153,18 @@ export default function UsersList() {
                 colors={['#ffffff', '#f8fafc']}
                 className="px-6 pt-16 pb-8 shadow-sm border-b border-slate-100"
             >
-                <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('users.title')}</Text>
-                <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Manage society community</Text>
+                <View className="flex-row items-center mb-4">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="mr-4 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm active:bg-slate-50"
+                    >
+                        <Icon icon={ChevronLeft} color="#374151" size={24} />
+                    </TouchableOpacity>
+                    <View>
+                        <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('users.title')}</Text>
+                        <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">{t('users.manageSubtitle')}</Text>
+                    </View>
+                </View>
 
                 {/* Search Bar */}
                 <View className="mt-6 flex-row items-center bg-white rounded-2xl px-4 py-2 border border-slate-100 shadow-sm">
@@ -167,8 +198,8 @@ export default function UsersList() {
                             <TouchableOpacity
                                 onPress={() => setFilterRole(item === 'All' ? undefined : item)}
                                 className={`mr-3 px-6 py-2.5 rounded-2xl border-2 ${isSelected
-                                        ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-200'
-                                        : 'bg-white border-slate-100'
+                                    ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-200'
+                                    : 'bg-white border-slate-100'
                                     }`}
                                 activeOpacity={0.7}
                             >

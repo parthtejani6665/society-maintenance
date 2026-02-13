@@ -115,7 +115,7 @@ export default function AmenitiesScreen() {
                             <Icon icon={LayoutGrid} color="#cbd5e1" size={40} />
                         </View>
                         <Text className="text-slate-900 font-black text-lg uppercase tracking-tight">{t('amenities.noAmenities')}</Text>
-                        <Text className="text-slate-400 font-bold text-xs mt-1">Check back later</Text>
+                        <Text className="text-slate-400 font-bold text-xs mt-1">{t('amenities.checkBack')}</Text>
                     </View>
                 }
                 renderItem={({ item }) => (

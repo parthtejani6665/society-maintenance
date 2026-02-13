@@ -106,7 +106,7 @@ export default function ManageBookingsScreen() {
                             <View className="flex-row items-center bg-blue-50/50 self-start px-2 py-1 rounded-lg">
                                 <Icon icon={UserIcon} color={Theme.colors.primary} size={10} />
                                 <Text className="text-blue-800 text-[9px] font-black uppercase tracking-widest ml-1">
-                                    {item.User?.fullName} • {item.User?.flatNumber || 'Staff'}
+                                    {item.user?.fullName || item.User?.fullName} • {item.user?.flatNumber || item.User?.flatNumber || 'Staff'}
                                 </Text>
                             </View>
                         </View>
@@ -120,7 +120,7 @@ export default function ManageBookingsScreen() {
 
                     <View className="flex-row items-center justify-between mb-8">
                         <View className="items-center flex-1 bg-slate-50 p-4 rounded-[24px] border border-slate-100/50">
-                            <Text className="text-slate-400 font-black text-[9px] uppercase tracking-widest mb-1.5 text-center">Schedule</Text>
+                            <Text className="text-slate-400 font-black text-[9px] uppercase tracking-widest mb-1.5 text-center">{t('manageBookings.schedule')}</Text>
                             <Text className="text-slate-900 font-black text-xs text-center">
                                 {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {item.startTime}
                             </Text>
@@ -140,7 +140,7 @@ export default function ManageBookingsScreen() {
                                 ) : (
                                     <>
                                         <Icon icon={CheckCircle2} color="white" size={18} />
-                                        <Text className="text-white font-black text-xs uppercase tracking-widest ml-2">Approve</Text>
+                                        <Text className="text-white font-black text-xs uppercase tracking-widest ml-2">{t('manageBookings.approve')}</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -151,7 +151,7 @@ export default function ManageBookingsScreen() {
                                 activeOpacity={0.7}
                             >
                                 <Icon icon={XCircle} color="#e11d48" size={18} />
-                                <Text className="text-rose-600 font-black text-xs uppercase tracking-widest ml-2">Reject</Text>
+                                <Text className="text-rose-600 font-black text-xs uppercase tracking-widest ml-2">{t('manageBookings.reject')}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -163,7 +163,7 @@ export default function ManageBookingsScreen() {
     return (
         <View className="flex-1 bg-slate-50">
             <Stack.Screen options={{
-                title: 'Manage Bookings',
+                title: t('manageBookings.title'),
                 headerShown: true,
                 headerStyle: { backgroundColor: 'white' },
                 headerTitleStyle: { fontFamily: 'System', fontWeight: '900', fontSize: 20 },
@@ -209,9 +209,9 @@ export default function ManageBookingsScreen() {
                     }
                     ListHeaderComponent={
                         <View className="mb-8">
-                            <Text className="text-3xl font-black text-slate-900 tracking-tight">Review Queue</Text>
+                            <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('manageBookings.reviewQueue')}</Text>
                             <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
-                                {filterStatus === 'all' ? 'All' : t(`manageBookings.${filterStatus}`)} requests from residents
+                                {t('manageBookings.requestsSubtitle', { status: filterStatus === 'all' ? t('manageBookings.all') : t(`manageBookings.${filterStatus}`) })}
                             </Text>
                         </View>
                     }
@@ -220,8 +220,8 @@ export default function ManageBookingsScreen() {
                             <View className="bg-slate-50 w-20 h-20 rounded-full items-center justify-center mb-6">
                                 <Icon icon={AlertCircle} color="#cbd5e1" size={40} />
                             </View>
-                            <Text className="text-slate-900 font-black text-lg uppercase tracking-tight">No requests found</Text>
-                            <Text className="text-slate-400 font-bold text-xs mt-1">Filtering by: {filterStatus}</Text>
+                            <Text className="text-slate-900 font-black text-lg uppercase tracking-tight">{t('manageBookings.noRequests')}</Text>
+                            <Text className="text-slate-400 font-bold text-xs mt-1">{t('manageBookings.filteringBy', { status: filterStatus })}</Text>
                         </View>
                     }
                     renderItem={renderItem}

@@ -171,10 +171,10 @@ export default function MaintenanceScreen() {
         setProcessingId(id);
         try {
             await maintenanceService.payMaintenance(id);
-            Alert.alert(t('common.success'), `Payment processed via ${method}!`);
+            Alert.alert(t('common.success'), t('maintenance.paymentProcessed', { method }));
             fetchRecords();
         } catch (error) {
-            Alert.alert(t('common.error'), 'Payment confirmation failed');
+            Alert.alert(t('common.error'), t('maintenance.paymentFailed'));
         } finally {
             setProcessingId(null);
             setSelectedRecord(null);
@@ -192,7 +192,7 @@ export default function MaintenanceScreen() {
             await new Promise(resolve => setTimeout(resolve, 2000));
             if (selectedRecord) {
                 await maintenanceService.payMaintenance(selectedRecord.id);
-                Alert.alert(t('common.success'), 'Payment processed successfully!');
+                Alert.alert(t('common.success'), t('maintenance.paymentSuccess'));
                 setShowCardForm(false);
                 setCardName('');
                 setCardNumber('');
@@ -201,7 +201,7 @@ export default function MaintenanceScreen() {
                 fetchRecords();
             }
         } catch (error) {
-            Alert.alert(t('common.error'), 'Card payment failed. Please try again.');
+            Alert.alert(t('common.error'), t('maintenance.cardPaymentFailed'));
         } finally {
             setIsProcessingCard(false);
             setSelectedRecord(null);
@@ -272,7 +272,7 @@ export default function MaintenanceScreen() {
                             <Icon icon={IndianRupee} color="#1e293b" size={20} />
                         </View>
                         <View>
-                            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">Amount Due</Text>
+                            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">{t('maintenance.amountDue')}</Text>
                             <Text className="text-3xl font-black text-slate-900 tracking-tight">₹{item.amount}</Text>
                         </View>
                     </View>
@@ -282,13 +282,13 @@ export default function MaintenanceScreen() {
                             <View className="w-8 h-8 bg-emerald-100 rounded-full items-center justify-center mr-3">
                                 <Icon icon={CheckCircle2} color="#059669" size={16} />
                             </View>
-                            <Text className="text-slate-600 text-xs font-bold leading-tight">
+                            <Text className="flex-1 text-slate-600 text-xs font-bold leading-tight mr-3">
                                 {t('maintenance.paidOn', { date: new Date(item.paidAt!).toLocaleDateString() })}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => handleDownloadReceipt(item)}
                                 disabled={downloadingId === item.id}
-                                className="ml-auto bg-blue-50 p-2 rounded-xl border border-blue-100"
+                                className="bg-blue-50 p-2 rounded-xl border border-blue-100"
                             >
                                 {downloadingId === item.id ? (
                                     <ActivityIndicator size="small" color="#2563eb" />
@@ -392,9 +392,9 @@ export default function MaintenanceScreen() {
                         <View className="bg-rose-50 w-24 h-24 rounded-full items-center justify-center mb-6 border border-rose-100">
                             <Icon icon={ShieldCheck} color="#f43f5e" size={48} />
                         </View>
-                        <Text className="text-slate-900 font-black text-xl mb-2 text-center">Access Restricted</Text>
+                        <Text className="text-slate-900 font-black text-xl mb-2 text-center">{t('maintenance.accessRestricted')}</Text>
                         <Text className="text-slate-500 font-bold text-sm text-center">
-                            Staff members do not have permission to view maintenance records.
+                            {t('maintenance.staffRestricted')}
                         </Text>
                     </View>
                 ) : (

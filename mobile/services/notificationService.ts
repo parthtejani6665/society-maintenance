@@ -128,5 +128,17 @@ export const notificationService = {
         } catch (error) {
             console.error('Error during notification initialization:', error);
         }
+    },
+
+    // Fetch user notifications
+    fetchNotifications: async () => {
+        const response = await api.get('/notifications');
+        return response.data;
+    },
+
+    // Mark notification as read
+    markAsRead: async (id: string) => {
+        const response = await api.patch(`/notifications/${id}/read`);
+        return response.data;
     }
 };

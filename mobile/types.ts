@@ -18,6 +18,11 @@ export interface Complaint {
     resolvedAt?: string;
     createdAt: string;
     updatedAt: string;
+    resident?: {
+        fullName: string;
+        flatNumber: string;
+        phoneNumber?: string;
+    };
     User?: {
         fullName: string;
         flatNumber: string;
@@ -113,6 +118,10 @@ export interface Booking {
         name: string;
     };
     User?: {
+        fullName: string;
+        flatNumber: string;
+    };
+    user?: {
         fullName: string;
         flatNumber: string;
     };

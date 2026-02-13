@@ -163,8 +163,8 @@ export default function PollsScreen() {
                                             disabled={showResults || voting === item.id}
                                             onPress={() => handleVote(item.id, option.id)}
                                             className={`relative h-16 rounded-[22px] overflow-hidden border-2 ${isSelected
-                                                    ? 'border-blue-600 bg-blue-50/50'
-                                                    : 'border-slate-100 bg-slate-50/30'
+                                                ? 'border-blue-600 bg-blue-50/50'
+                                                : 'border-slate-100 bg-slate-50/30'
                                                 } ${!showResults ? 'active:bg-slate-100' : ''}`}
                                             activeOpacity={showResults ? 1 : 0.7}
                                         >
