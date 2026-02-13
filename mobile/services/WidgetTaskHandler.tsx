@@ -1,29 +1,63 @@
 import React from 'react';
-import { WidgetTaskHandlerProps } from 'react-native-android-widget';
-import { HomeWidget } from '../components/HomeWidget';
+import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
+import { MaintenanceSmallWidget } from '../components/MaintenanceSmallWidget';
+import { MaintenanceMediumWidget } from '../components/MaintenanceMediumWidget';
+import { MaintenanceLargeWidget } from '../components/MaintenanceLargeWidget';
 
-const nameToWidget = {
-    // Hello is the name of the widget
-    HomeWidget: HomeWidget,
-};
+import { WidgetService } from './WidgetService';
 
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
     const widgetInfo = props.widgetInfo;
-    const Widget = nameToWidget[widgetInfo.widgetName as keyof typeof nameToWidget];
 
     switch (props.widgetAction) {
         case 'WIDGET_ADDED':
         case 'WIDGET_UPDATE':
         case 'WIDGET_RESIZED':
-            props.renderWidget(<Widget />);
+            const data = await WidgetService.getMaintenanceWidgetData();
+
+            switch (widgetInfo.widgetName) {
+                case 'MaintenanceSmall':
+                    props.renderWidget(
+                        <MaintenanceSmallWidget
+                            month={data.month}
+                            amount={data.amount}
+                            status={data.status}
+                        />
+                    );
+                    break;
+                case 'MaintenanceMedium':
+                    props.renderWidget(
+                        <MaintenanceMediumWidget
+                            month={data.month}
+                            amount={data.amount}
+                            dueDate={data.dueDate}
+                            status={data.status}
+                            collectionProgress={data.collectionProgress}
+                        />
+                    );
+                    break;
+                case 'MaintenanceLarge':
+                    props.renderWidget(
+                        <MaintenanceLargeWidget
+                            month={data.month}
+                            amount={data.amount}
+                            dueDate={data.dueDate}
+                            status={data.status}
+                            collectionProgress={data.collectionProgress}
+                            lastPaymentDate={data.lastPaymentDate}
+                            lastPaymentAmount={data.lastPaymentAmount}
+                        />
+                    );
+                    break;
+            }
             break;
 
         case 'WIDGET_DELETED':
-            // cleanup if needed
+            // Cleanup if needed
             break;
 
         case 'WIDGET_CLICK':
-            // handle click
+            // Handle clicks (e.g. open app)
             break;
 
         default:

@@ -8,60 +8,138 @@ export interface HomeWidgetProps {
 }
 
 export function HomeWidget({ noticeTitle, noticeContent, maintenanceAmount }: HomeWidgetProps) {
+    const isMaintenanceDue = maintenanceAmount && maintenanceAmount !== '₹ 0' && maintenanceAmount !== '₹ 0.00';
+
     return (
         <FlexWidget
             style={{
                 height: 'match_parent',
                 width: 'match_parent',
-                backgroundColor: '#ffffff',
+                backgroundColor: '#f8fafc', // slate-50
                 borderRadius: 16,
-                padding: 16,
                 flexDirection: 'column',
-                justifyContent: 'space-between',
             }}
         >
-            <TextWidget
-                text="Digital Dwell"
+            {/* Header */}
+            <FlexWidget
                 style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    color: '#333333',
+                    backgroundColor: '#1e40af', // blue-800
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    borderTopLeftRadius: 16,
+                    borderTopRightRadius: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                 }}
-            />
-
-            <FlexWidget style={{ flexDirection: 'column' }}>
+            >
                 <TextWidget
-                    text={noticeTitle || "Latest Notice"}
+                    text="Digital Dwell"
                     style={{
-                        fontSize: 12,
-                        color: '#888888',
-                        marginBottom: 4,
+                        fontSize: 16,
+                        fontWeight: 'bold',
+                        color: '#ffffff',
                     }}
                 />
                 <TextWidget
-                    text={noticeContent || "No new notices"}
+                    text="Society App"
                     style={{
-                        fontSize: 14,
-                        color: '#000000',
+                        fontSize: 10,
+                        color: '#93c5fd', // blue-300
                     }}
                 />
             </FlexWidget>
 
+            {/* Content Container */}
             <FlexWidget
                 style={{
-                    flexDirection: 'row',
+                    padding: 12,
+                    flexDirection: 'column',
                     justifyContent: 'space-between',
-                    marginTop: 8,
+                    height: 'match_parent',
                 }}
             >
-                <TextWidget
-                    text="Maintenance Due"
-                    style={{ fontSize: 12, color: '#888888' }}
-                />
-                <TextWidget
-                    text={maintenanceAmount || "₹ 0"}
-                    style={{ fontSize: 14, fontWeight: 'bold', color: '#ef4444' }}
-                />
+                {/* Notice Section */}
+                <FlexWidget
+                    style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: 12,
+                        padding: 12,
+                        flexDirection: 'column',
+                        marginBottom: 8,
+                    }}
+                >
+                    <TextWidget
+                        text="LATEST NOTICE"
+                        style={{
+                            fontSize: 10,
+                            fontWeight: 'bold',
+                            color: '#64748b', // slate-500
+                            marginBottom: 4,
+                            letterSpacing: 1,
+                        }}
+                    />
+                    <TextWidget
+                        text={noticeTitle || "No New Notices"}
+                        style={{
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                            color: '#0f172a', // slate-900
+                            marginBottom: 2,
+                        }}
+                        maxLines={1}
+                    />
+                    <TextWidget
+                        text={noticeContent || "Check the app for recent updates and announcements."}
+                        style={{
+                            fontSize: 12,
+                            color: '#475569', // slate-600
+                        }}
+                        maxLines={2}
+                    />
+                </FlexWidget>
+
+                {/* Maintenance Section */}
+                <FlexWidget
+                    style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: 12,
+                        padding: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderWidth: 1,
+                        borderColor: isMaintenanceDue ? '#fee2e2' : '#dcfce7', // red-100 : emerald-100
+                    }}
+                >
+                    <FlexWidget style={{ flexDirection: 'column' }}>
+                        <TextWidget
+                            text="MAINTENANCE DUE"
+                            style={{
+                                fontSize: 10,
+                                fontWeight: 'bold',
+                                color: '#64748b', // slate-500
+                            }}
+                        />
+                        <TextWidget
+                            text={isMaintenanceDue ? "Actions Required" : "All Paid"}
+                            style={{
+                                fontSize: 10,
+                                color: isMaintenanceDue ? '#e11d48' : '#059669', // rose-600 : emerald-600
+                                marginTop: 2,
+                            }}
+                        />
+                    </FlexWidget>
+
+                    <TextWidget
+                        text={maintenanceAmount || "₹ 0"}
+                        style={{
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: isMaintenanceDue ? '#dc2626' : '#059669', // red-600 : emerald-600
+                        }}
+                    />
+                </FlexWidget>
             </FlexWidget>
         </FlexWidget>
     );

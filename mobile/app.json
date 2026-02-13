@@ -17,7 +17,7 @@
       "bundleIdentifier": "com.digitaldwell.mobile"
     },
     "android": {
-      "package": "com.digitaldwell.mobile",
+      "package": "com.society.ai",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -65,7 +65,47 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "MaintenanceSmall",
+              "label": "Maintenance (Small)",
+              "minWidth": "160dp",
+              "minHeight": "160dp",
+              "description": "Quick view of maintenance status",
+              "previewImage": "./assets/widget-preview.png",
+              "resizeMode": "none",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2
+            },
+            {
+              "name": "MaintenanceMedium",
+              "label": "Maintenance (Medium)",
+              "minWidth": "320dp",
+              "minHeight": "160dp",
+              "description": "Maintenance details and action",
+              "previewImage": "./assets/widget-preview.png",
+              "resizeMode": "horizontal",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2
+            },
+            {
+              "name": "MaintenanceLarge",
+              "label": "Maintenance Dashboard",
+              "minWidth": "320dp",
+              "minHeight": "320dp",
+              "description": "Full maintenance overview",
+              "previewImage": "./assets/widget-preview.png",
+              "resizeMode": "horizontal|vertical",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4
+            }
+          ]
+        }
+      ]
     ],
     "extra": {
       "router": {},

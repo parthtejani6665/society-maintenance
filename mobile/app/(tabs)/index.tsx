@@ -4,6 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { complaintService } from '../../services/complaintService';
+import { WidgetService } from '../../services/WidgetService';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Phone, Megaphone, CheckCircle2, Calendar, Users,
@@ -33,6 +34,9 @@ export default function Dashboard() {
                 console.error('Failed to fetch stats:', error);
             }
         }
+
+        // Update widget for all users
+        WidgetService.fetchAndPushWidgetData();
     };
 
     useFocusEffect(
