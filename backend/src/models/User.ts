@@ -5,8 +5,10 @@ interface UserAttributes {
     id: string;
     email: string;
     password?: string;
+    googleId?: string;
+    avatar?: string;
     fullName: string;
-    phoneNumber: string;
+    phoneNumber?: string;
     role: 'admin' | 'resident' | 'staff';
     flatNumber?: string;
     isActive: boolean;
@@ -20,9 +22,11 @@ interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActi
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     public id!: string;
     public email!: string;
-    public password!: string;
+    public password?: string;
+    public googleId?: string;
+    public avatar?: string;
     public fullName!: string;
-    public phoneNumber!: string;
+    public phoneNumber?: string;
     public role!: 'admin' | 'resident' | 'staff';
     public flatNumber!: string;
     public isActive!: boolean;
@@ -48,7 +52,16 @@ User.init(
         },
         password: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
+        },
+        googleId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true,
+        },
+        avatar: {
+            type: DataTypes.STRING,
+            allowNull: true,
         },
         fullName: {
             type: DataTypes.STRING,
@@ -56,7 +69,7 @@ User.init(
         },
         phoneNumber: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         role: {
             type: DataTypes.ENUM('admin', 'resident', 'staff'),

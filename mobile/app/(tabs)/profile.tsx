@@ -1,24 +1,68 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Languages, LogOut, User as UserIcon, Settings, Shield, Bell, ChevronRight, CreditCard } from 'lucide-react-native';
+import { Languages, LogOut, User as UserIcon, Settings, Bell, ChevronRight, CreditCard, Camera } from 'lucide-react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Icon } from '../../components/Icon';
-import { Theme } from '../../constants/Theme';
+import * as ImagePicker from 'expo-image-picker';
+import { userService } from '../../services/userService';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Profile() {
     const { t } = useTranslation();
     const router = useRouter();
-    const { user, signOut } = useAuth();
+    const { user, signOut, signIn, refreshUser } = useAuth();
+    const insets = useSafeAreaInsets();
+    const [uploading, setUploading] = useState(false);
 
     const changeLanguage = async (lng: string) => {
         await i18n.changeLanguage(lng);
         await AsyncStorage.setItem('user-language', lng);
+    };
+
+    const handlePickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (permissionResult.granted === false) {
+            Alert.alert("Permission Required", "You've refused to allow this app to access your photos!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            handleUpload(result.assets[0].uri);
+        }
+    };
+
+    const handleUpload = async (uri: string) => {
+        setUploading(true);
+        try {
+            const response = await userService.uploadProfileImage(uri);
+            Alert.alert("Success", "Profile photo updated successfully!");
+
+            // Update local user state with new avatar
+            // Update local user state with new avatar
+            // We need to re-sign in or update context to reflect changes immediately
+            if (user) {
+                await refreshUser();
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "Failed to upload profile photo.");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const SettingItem = ({ icon, label, onPress, color = '#64748b' }: any) => (
@@ -37,7 +81,10 @@ export default function Profile() {
     return (
         <View className="flex-1 bg-slate-50">
             {/* Professional Header */}
-            <View className="bg-white px-6 pt-14 pb-6 border-b border-slate-100 shadow-sm shadow-slate-200/50">
+            <View
+                className="bg-white px-6 pb-6 border-b border-slate-100 shadow-sm shadow-slate-200/50"
+                style={{ paddingTop: insets.top + 10 }}
+            >
                 <Text className="text-3xl font-black text-slate-900">Profile</Text>
                 <Text className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Account & Preferences</Text>
             </View>
@@ -46,12 +93,28 @@ export default function Profile() {
                 {/* Modern Profile Header */}
                 <View className="items-center mb-8">
                     <View className="relative">
-                        <View className="w-32 h-32 bg-white rounded-[40px] justify-center items-center shadow-xl shadow-blue-500/20 border-4 border-white">
-                            <View className="w-full h-full bg-blue-50 rounded-[36px] items-center justify-center">
-                                <Text className="text-5xl font-black text-blue-800">{user?.fullName?.charAt(0)}</Text>
+                        <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
+                            <View className="w-32 h-32 bg-white rounded-[40px] justify-center items-center shadow-xl shadow-blue-500/20 border-4 border-white overflow-hidden">
+                                {user?.avatar ? (
+                                    <Image source={{ uri: user.avatar }} className="w-full h-full" />
+                                ) : (
+                                    <View className="w-full h-full bg-blue-50 items-center justify-center">
+                                        <Text className="text-5xl font-black text-blue-800">{user?.fullName?.charAt(0)}</Text>
+                                    </View>
+                                )}
+                                {uploading && (
+                                    <View className="absolute inset-0 bg-black/30 items-center justify-center">
+                                        <ActivityIndicator color="white" />
+                                    </View>
+                                )}
                             </View>
-                        </View>
-                        <View className="absolute bottom-0 right-0 bg-emerald-500 w-8 h-8 rounded-full border-4 border-white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handlePickImage}
+                            className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full border-4 border-white items-center justify-center shadow-lg"
+                        >
+                            <Icon icon={Camera} color="white" size={16} />
+                        </TouchableOpacity>
                     </View>
                     <Text className="text-2xl font-black text-slate-900 mt-4">{user?.fullName}</Text>
                     <Text className="text-slate-400 font-bold text-sm tracking-tight">{user?.email}</Text>

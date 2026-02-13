@@ -23,8 +23,8 @@ const startServer = async () => {
         const { initJobs } = require('./jobs');
         initJobs();
 
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
+        app.listen(Number(PORT), '0.0.0.0', () => {
+            console.log(`Server is running on port ${PORT} (accessible on 0.0.0.0)`);
         });
     } catch (error) {
         console.error('Unable to connect to the database:', error);

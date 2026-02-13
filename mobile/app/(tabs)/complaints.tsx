@@ -9,11 +9,13 @@ import { API_ROOT } from '../../services/api';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Complaints() {
     const router = useRouter();
     const { user } = useAuth();
     const { status } = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -135,7 +137,10 @@ export default function Complaints() {
 
     return (
         <View className="flex-1 bg-slate-50">
-            <View className="bg-white px-5 pt-14 pb-6 shadow-sm shadow-slate-200/50 z-10">
+            <View
+                className="bg-white px-5 pb-6 shadow-sm shadow-slate-200/50 z-10"
+                style={{ paddingTop: insets.top + 10 }}
+            >
                 <View className="flex-row justify-between items-center mb-6">
                     <Text className="text-3xl font-extrabold text-slate-900">Complaints</Text>
                     <TouchableOpacity className="p-2 bg-slate-50 rounded-xl border border-slate-100">
@@ -167,8 +172,8 @@ export default function Complaints() {
                             key={cat}
                             onPress={() => setSelectedCategory(cat)}
                             className={`px-5 py-2.5 rounded-2xl mr-3 border-2 ${selectedCategory === cat
-                                    ? 'bg-blue-800 border-blue-800 shadow-md shadow-blue-800/20'
-                                    : 'bg-white border-slate-100'
+                                ? 'bg-blue-800 border-blue-800 shadow-md shadow-blue-800/20'
+                                : 'bg-white border-slate-100'
                                 }`}
                             activeOpacity={0.8}
                         >

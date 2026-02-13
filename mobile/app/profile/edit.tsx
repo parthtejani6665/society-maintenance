@@ -69,8 +69,8 @@ export default function EditProfile() {
 
             {/* Header */}
             <View className="bg-white px-6 pt-14 pb-5 shadow-lg shadow-gray-200/50 flex-row items-center">
-                <TouchableOpacity 
-                    onPress={() => router.back()} 
+                <TouchableOpacity
+                    onPress={() => router.back()}
                     className="bg-gray-100 p-2.5 rounded-xl mr-4 active:bg-gray-200"
                 >
                     <TabBarIcon icon={ChevronLeft} color="#374151" size={22} />
@@ -154,11 +154,9 @@ export default function EditProfile() {
                     </View>
                 </View>
 
-                {/* Save Button */}
                 <TouchableOpacity
-                    className={`bg-gradient-to-r from-blue-600 to-blue-700 p-5 rounded-2xl items-center shadow-xl shadow-blue-500/30 flex-row justify-center ${
-                        loading ? 'opacity-70' : ''
-                    }`}
+                    className={`bg-blue-800 p-5 rounded-2xl items-center shadow-xl shadow-blue-800/20 flex-row justify-center ${loading ? 'opacity-70' : ''
+                        }`}
                     onPress={handleSubmit}
                     disabled={loading}
                     activeOpacity={0.8}

@@ -11,11 +11,13 @@ import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/Button';
 import { Theme } from '../../constants/Theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AmenityBookingScreen() {
     const { t } = useTranslation();
     const { id } = useLocalSearchParams();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [amenity, setAmenity] = useState<Amenity | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -140,18 +142,21 @@ export default function AmenityBookingScreen() {
 
     return (
         <View className="flex-1 bg-slate-50">
-            <Stack.Screen options={{
-                title: 'Book Facility',
-                headerShown: true,
-                headerStyle: { backgroundColor: 'white' },
-                headerTitleStyle: { fontFamily: 'System', fontWeight: '900', fontSize: 18 },
-                headerShadowVisible: false,
-                headerLeft: () => (
-                    <TouchableOpacity onPress={() => router.back()} className="mr-4">
-                        <Icon icon={ChevronLeft} color="#000" size={24} />
-                    </TouchableOpacity>
-                )
-            }} />
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* Custom Header with Safe Area */}
+            <View
+                className="bg-white px-4 pb-4 border-b border-slate-100 shadow-sm shadow-slate-200/50 z-10 flex-row items-center gap-3"
+                style={{ paddingTop: insets.top + 10 }}
+            >
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="w-10 h-10 bg-slate-50 rounded-full items-center justify-center border border-slate-100"
+                >
+                    <Icon icon={ChevronLeft} color="#0f172a" size={24} />
+                </TouchableOpacity>
+                <Text className="text-xl font-black text-slate-900 tracking-tight">Book Facility</Text>
+            </View>
 
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
                 {/* Amenity Overview Card */}
@@ -249,20 +254,20 @@ export default function AmenityBookingScreen() {
                                         onPress={() => !isDisabled && setSelectedSlot(time)}
                                         disabled={isDisabled}
                                         className={`w-[30.5%] h-16 rounded-2xl items-center justify-center border-2 ${isSelected
-                                                ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-800/20'
-                                                : isDisabled
-                                                    ? 'bg-slate-100 border-slate-100'
-                                                    : 'bg-white border-slate-100'
+                                            ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-800/20'
+                                            : isDisabled
+                                                ? 'bg-slate-100 border-slate-100'
+                                                : 'bg-white border-slate-100'
                                             }`}
                                         activeOpacity={0.7}
                                     >
                                         <Text className={`font-black text-base ${isSelected
-                                                ? 'text-white'
-                                                : isBooked
-                                                    ? 'text-slate-400 line-through'
-                                                    : isPast
-                                                        ? 'text-slate-300'
-                                                        : 'text-slate-700'
+                                            ? 'text-white'
+                                            : isBooked
+                                                ? 'text-slate-400 line-through'
+                                                : isPast
+                                                    ? 'text-slate-300'
+                                                    : 'text-slate-700'
                                             }`}>
                                             {time}
                                         </Text>

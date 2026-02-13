@@ -168,9 +168,9 @@ export default function EmergencyContactsScreen() {
                         return (
                             <TouchableOpacity
                                 onPress={() => setActiveCategory(item.id)}
-                                className={`mr-3 px-6 py-2.5 rounded-2xl border-2 ${isSelected
-                                        ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-200'
-                                        : 'bg-white border-slate-100'
+                                className={`mr-3 px-6 py-2.5 rounded-2xl border-2 flex-row items-center ${isSelected
+                                    ? 'bg-blue-800 border-blue-800 shadow-lg shadow-blue-200'
+                                    : 'bg-white border-slate-100'
                                     }`}
                                 activeOpacity={0.7}
                             >
@@ -218,8 +218,8 @@ export default function EmergencyContactsScreen() {
                                 <View className={`w-14 h-14 rounded-[20px] justify-center items-center mr-4 border border-slate-50 shadow-sm ${styles.bg}`}>
                                     <Icon icon={styles.icon} color={styles.color} size={26} />
                                 </View>
-                                <View className="flex-1">
-                                    <View className="flex-row items-center mb-0.5">
+                                <View className="flex-1 mr-3">
+                                    <View className="flex-row items-center mb-1 flex-wrap gap-y-1">
                                         <Text className="text-lg font-black text-slate-900 leading-tight">{item.name}</Text>
                                         <View className={`${styles.bg} px-2 py-0.5 rounded-lg ml-2`}>
                                             <Text className="text-[8px] font-black uppercase tracking-widest" style={{ color: styles.color }}>{styles.label}</Text>

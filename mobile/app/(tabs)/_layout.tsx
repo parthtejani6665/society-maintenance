@@ -16,6 +16,7 @@ export default function TabLayout() {
                 name="index"
                 options={{
                     title: 'Dashboard',
+                    headerShown: false,
                     tabBarIcon: ({ color }) => <TabBarIcon icon={Home} color={color} />,
                 }}
             />
@@ -23,6 +24,7 @@ export default function TabLayout() {
                 name="complaints"
                 options={{
                     title: 'Complaints',
+                    headerShown: false,
                     tabBarIcon: ({ color }) => <TabBarIcon icon={FileText} color={color} />,
                 }}
             />
@@ -30,6 +32,7 @@ export default function TabLayout() {
                 name="notices"
                 options={{
                     title: 'Notices',
+                    headerShown: false,
                     tabBarIcon: ({ color }) => <TabBarIcon icon={Megaphone} color={color} />,
                 }}
             />
@@ -37,6 +40,7 @@ export default function TabLayout() {
                 name="maintenance"
                 options={{
                     title: 'Maintenance',
+                    headerShown: false,
                     tabBarIcon: ({ color }) => <TabBarIcon icon={IndianRupee} color={color} />,
                     href: user?.role === 'staff' ? null : '/maintenance',
                 }}
@@ -45,6 +49,7 @@ export default function TabLayout() {
                 name="profile"
                 options={{
                     title: 'Profile',
+                    headerShown: false,
                     tabBarIcon: ({ color }) => <TabBarIcon icon={User} color={color} />,
                 }}
             />

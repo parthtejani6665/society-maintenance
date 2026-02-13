@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { receiptService } from '../../services/receiptService';
 import { Download } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MaintenanceRecord {
     id: string;
@@ -30,6 +31,7 @@ interface MaintenanceRecord {
 export default function MaintenanceScreen() {
     const { t } = useTranslation();
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [records, setRecords] = useState<MaintenanceRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -47,13 +49,24 @@ export default function MaintenanceScreen() {
     const [cvv, setCvv] = useState('');
     const [isProcessingCard, setIsProcessingCard] = useState(false);
     const [downloadingId, setDownloadingId] = useState<string | null>(null);
+    const [accessDenied, setAccessDenied] = useState(false);
 
     const fetchRecords = async () => {
+        if (user?.role === 'staff') {
+            setAccessDenied(true);
+            setLoading(false);
+            return;
+        }
+
         try {
+            setAccessDenied(false);
             const data = await maintenanceService.fetchMaintenanceRecords();
             setRecords(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch maintenance records:', error);
+            if (error.response && error.response.status === 403) {
+                setAccessDenied(true);
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -63,7 +76,7 @@ export default function MaintenanceScreen() {
     useFocusEffect(
         useCallback(() => {
             fetchRecords();
-        }, [])
+        }, [user])
     );
 
     const onRefresh = useCallback(() => {
@@ -318,7 +331,8 @@ export default function MaintenanceScreen() {
             {/* Premium Header */}
             <LinearGradient
                 colors={['#ffffff', '#f8fafc']}
-                className="px-6 pt-16 pb-8 shadow-sm border-b border-slate-100"
+                className="px-6 pb-8 shadow-sm border-b border-slate-100"
+                style={{ paddingTop: insets.top + 10 }}
             >
                 <View className="flex-row justify-between items-center mb-6">
                     <View>
@@ -372,6 +386,16 @@ export default function MaintenanceScreen() {
                 {loading && !refreshing ? (
                     <View className="flex-1 justify-center items-center">
                         <ActivityIndicator size="large" color="#1e40af" />
+                    </View>
+                ) : accessDenied ? (
+                    <View className="flex-1 justify-center items-center p-6">
+                        <View className="bg-rose-50 w-24 h-24 rounded-full items-center justify-center mb-6 border border-rose-100">
+                            <Icon icon={ShieldCheck} color="#f43f5e" size={48} />
+                        </View>
+                        <Text className="text-slate-900 font-black text-xl mb-2 text-center">Access Restricted</Text>
+                        <Text className="text-slate-500 font-bold text-sm text-center">
+                            Staff members do not have permission to view maintenance records.
+                        </Text>
                     </View>
                 ) : (
                     <FlatList

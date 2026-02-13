@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import User from '../models/User';
 
 // Create User (Admin only)
+import { AuthRequest } from '../middlewares/auth';
+
 export const createUser = async (req: Request, res: Response) => {
     try {
         const { fullName, email, password, phoneNumber, role, flatNumber } = req.body;
@@ -139,6 +141,83 @@ export const getUserById = async (req: Request, res: Response) => {
         res.json(user);
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Update User (Admin only)
+export const updateUser = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { fullName, email, phoneNumber, role, flatNumber, isActive } = req.body;
+
+        const user = await User.findByPk(id as string);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        // Check if email is being updated and if it's already taken
+        if (email && email !== user.email) {
+            const existingUser = await User.findOne({ where: { email } });
+            if (existingUser) {
+                res.status(400).json({ message: 'Email already in use.' });
+                return;
+            }
+        }
+
+        user.fullName = fullName || user.fullName;
+        user.email = email || user.email;
+        user.phoneNumber = phoneNumber || user.phoneNumber;
+        user.role = role || user.role;
+        user.flatNumber = flatNumber || user.flatNumber;
+        if (typeof isActive === 'boolean') {
+            user.isActive = isActive;
+        }
+
+        await user.save();
+
+        res.json({
+            id: user.id,
+            fullName: user.fullName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            flatNumber: user.flatNumber,
+            isActive: user.isActive
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const updateProfileImage = async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.file) {
+            res.status(400).json({ message: 'No file uploaded' });
+            return;
+        }
+
+        const userId = req.user!.id;
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        // Construct full URL
+        const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        user.avatar = avatarUrl;
+        await user.save();
+
+        res.json({
+            message: 'Profile image updated successfully',
+            avatar: avatarUrl
+        });
+    } catch (error) {
+        console.error('Profile image upload error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

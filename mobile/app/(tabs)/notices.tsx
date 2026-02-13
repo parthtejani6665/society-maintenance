@@ -9,11 +9,13 @@ import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function NoticesScreen() {
     const { t } = useTranslation();
     const router = useRouter();
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [notices, setNotices] = useState<Notice[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -86,7 +88,8 @@ export default function NoticesScreen() {
             {/* Premium Header */}
             <LinearGradient
                 colors={['#ffffff', '#f8fafc']}
-                className="px-6 pt-16 pb-8 shadow-sm border-b border-slate-100"
+                className="px-6 pb-8 shadow-sm border-b border-slate-100"
+                style={{ paddingTop: insets.top + 10 }}
             >
                 <View className="flex-row items-center justify-between">
                     <View>

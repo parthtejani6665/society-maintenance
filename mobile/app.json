@@ -17,7 +17,7 @@
       "bundleIdentifier": "com.digitaldwell.mobile"
     },
     "android": {
-      "package": "com.society.ai",
+      "package": "com.digitaldwell.mobile",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -63,7 +63,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "extra": {
       "router": {},

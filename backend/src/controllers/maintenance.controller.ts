@@ -71,6 +71,11 @@ export const getMaintenanceRecords = async (req: AuthRequest, res: Response) => 
         const { role, id } = req.user!;
         let whereClause = {};
 
+        if (role === 'staff') {
+            res.status(403).json({ message: 'Access denied. Staff cannot view maintenance records.' });
+            return;
+        }
+
         if (role === 'resident') {
             whereClause = { residentId: id };
         }

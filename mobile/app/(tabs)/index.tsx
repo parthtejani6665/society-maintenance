@@ -4,6 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { complaintService } from '../../services/complaintService';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Phone, Megaphone, CheckCircle2, Calendar, Users,
     FileText, LogOut, ChevronRight, BarChart2,
@@ -17,6 +18,7 @@ export default function Dashboard() {
     const { t } = useTranslation();
     const { user, signOut } = useAuth();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [stats, setStats] = useState({ active: 0, resolved: 0 });
     const [refreshing, setRefreshing] = useState(false);
 
@@ -65,7 +67,7 @@ export default function Dashboard() {
         <ScrollView
             className="flex-1 bg-slate-50"
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.primary} />}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 60, paddingBottom: 40 }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 20, paddingBottom: 40 }}
         >
             {/* Header */}
             <View className="flex-row justify-between items-center mb-8">

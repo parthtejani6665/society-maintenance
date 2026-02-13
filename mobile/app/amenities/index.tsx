@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, Alert, ScrollView } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { ChevronRight, Clock, Users, CalendarDays, Plus, ShieldCheck, CalendarClock, LayoutGrid, Info } from 'lucide-react-native';
+import { ChevronRight, Clock, Users, CalendarDays, Plus, ShieldCheck, CalendarClock, LayoutGrid, Info, ChevronLeft } from 'lucide-react-native';
 import { amenityService } from '../../services/amenityService';
 import { Amenity } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Map amenity names to placeholder images (in a real app, use URLs from DB)
 const getAmenityImage = (name: string) => {
@@ -25,6 +26,7 @@ export default function AmenitiesScreen() {
     const { t } = useTranslation();
     const router = useRouter();
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [amenities, setAmenities] = useState<Amenity[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -63,14 +65,24 @@ export default function AmenitiesScreen() {
 
     return (
         <View className="flex-1 bg-slate-50">
-            <Stack.Screen options={{
-                title: t('amenities.title'),
-                headerShown: true,
-                headerStyle: { backgroundColor: 'white' },
-                headerTitleStyle: { fontFamily: 'System', fontWeight: '900', fontSize: 20 },
-                headerShadowVisible: false,
-                headerRight: () => (
-                    <View className="flex-row items-center gap-2 pr-4">
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* Custom Header with Safe Area */}
+            <View
+                className="bg-white px-6 pb-4 border-b border-slate-100 shadow-sm shadow-slate-200/50 z-10"
+                style={{ paddingTop: insets.top + 10 }}
+            >
+                <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-row items-center gap-3">
+                        <TouchableOpacity
+                            onPress={() => router.push('/(tabs)')}
+                            className="w-10 h-10 bg-slate-50 rounded-full items-center justify-center border border-slate-100"
+                        >
+                            <Icon icon={ChevronLeft} color="#0f172a" size={24} />
+                        </TouchableOpacity>
+                        <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('amenities.title')}</Text>
+                    </View>
+                    <View className="flex-row items-center gap-2">
                         {user?.role === 'admin' && (
                             <TouchableOpacity
                                 onPress={() => router.push('/amenities/manage-bookings')}
@@ -86,8 +98,9 @@ export default function AmenitiesScreen() {
                             <Icon icon={CalendarClock} color={Theme.colors.primary} size={20} />
                         </TouchableOpacity>
                     </View>
-                )
-            }} />
+                </View>
+                <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest pl-1">{t('amenities.selectAmenity')}</Text>
+            </View>
 
             <FlatList
                 data={amenities}
@@ -95,12 +108,6 @@ export default function AmenitiesScreen() {
                 contentContainerStyle={{ padding: 20 }}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-                ListHeaderComponent={
-                    <View className="mb-8">
-                        <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('amenities.bookFacilities')}</Text>
-                        <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">{t('amenities.selectAmenity')}</Text>
-                    </View>
                 }
                 ListEmptyComponent={
                     <View className="items-center py-20 bg-white rounded-[40px] border border-dashed border-slate-200">
