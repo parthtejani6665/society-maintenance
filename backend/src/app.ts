@@ -21,6 +21,7 @@ import contactRoutes from './routes/contact.routes';
 import noticeRoutes from './routes/notice.routes';
 import commentRoutes from './routes/comment.routes';
 import pollRoutes from './routes/poll.routes';
+import expenseRoutes from './routes/expense.routes';
 import amenityRoutes from './routes/amenity.routes';
 import bookingRoutes from './routes/booking.routes';
 import path from 'path';
@@ -35,6 +36,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/polls', pollRoutes);
+app.use('/api/expenses', expenseRoutes);
 app.use('/api/amenities', amenityRoutes);
 app.use('/api/bookings', bookingRoutes);
 

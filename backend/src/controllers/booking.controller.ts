@@ -124,7 +124,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        const initialStatus = amenity.requiresApproval ? 'pending' : 'confirmed';
+        const isAdmin = req.user!.role === 'admin';
+        const initialStatus = (amenity.requiresApproval && !isAdmin) ? 'pending' : 'confirmed';
 
         const booking = await Booking.create({
             userId,
@@ -135,8 +136,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
             status: initialStatus,
         });
 
-        // Notify Admins if approval is required
-        if (amenity.requiresApproval) {
+        // Notify Admins if approval is required and booking is pending
+        if (amenity.requiresApproval && initialStatus === 'pending') {
             const admins = await User.findAll({ where: { role: 'admin' }, attributes: ['id'] });
             const adminIds = admins.map(a => a.id);
             const userName = req.user!.fullName;
