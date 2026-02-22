@@ -24,6 +24,7 @@ import pollRoutes from './routes/poll.routes';
 import expenseRoutes from './routes/expense.routes';
 import amenityRoutes from './routes/amenity.routes';
 import bookingRoutes from './routes/booking.routes';
+import mapRoutes from './routes/map.routes';
 import path from 'path';
 
 // Routes
@@ -39,6 +40,7 @@ app.use('/api/polls', pollRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/amenities', amenityRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/maps', mapRoutes);
 
 // Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

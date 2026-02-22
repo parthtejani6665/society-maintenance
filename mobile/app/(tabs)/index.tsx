@@ -9,7 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Phone, Megaphone, CheckCircle2, Calendar, Users,
     FileText, LogOut, ChevronRight, BarChart2,
-    PlusCircle, ShieldAlert, CreditCard, IndianRupee
+    PlusCircle, ShieldAlert, CreditCard, IndianRupee,
+    MapPin
 } from 'lucide-react-native';
 import { Card } from '../../components/Card';
 import { Theme } from '../../constants/Theme';
@@ -191,6 +192,12 @@ export default function Dashboard() {
                         label={t('dashboard.financials')}
                         color="#059669"
                         onPress={() => router.push('/financials')}
+                    />
+                    <QuickAction
+                        icon={MapPin}
+                        label="Nearby"
+                        color="#ef4444"
+                        onPress={() => router.push('/nearby')}
                     />
                 </View>
             </View>

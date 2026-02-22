@@ -236,7 +236,8 @@
         "paymentProcessed": "Payment processed via {{method}}!",
         "paymentFailed": "Payment confirmation failed",
         "cardPaymentFailed": "Card payment failed. Please try again.",
-        "paymentSuccess": "Payment processed successfully!"
+        "paymentSuccess": "Payment processed successfully!",
+        "payNow": "Pay Now"
     },
     "auth": {
         "appTitle": "Digital Dwell",

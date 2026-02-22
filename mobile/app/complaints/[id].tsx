@@ -15,6 +15,8 @@ import { Button } from '../../components/Button';
 import { Icon } from '../../components/Icon';
 import { Theme } from '../../constants/Theme';
 import { useTranslation } from 'react-i18next';
+// Samsung Now Bar integration
+import { nowBarService } from '../../services/nowBarService';
 
 export default function ComplaintDetails() {
     const { t } = useTranslation();
@@ -26,6 +28,24 @@ export default function ComplaintDetails() {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [postingComment, setPostingComment] = useState(false);
+
+    // Samsung Now Bar: Auto-manage based on complaint status
+    useEffect(() => {
+        if (!complaint) return;
+
+        // Start tracking when complaint is in progress
+        if (complaint.status === 'in_progress') {
+            nowBarService.startComplaintTracking(complaint.id, 'In Progress').catch(() => {
+                // Silently fail if module not available (development mode)
+            });
+        } 
+        // Stop tracking when complaint is resolved
+        else if (complaint.status === 'resolved') {
+            nowBarService.stopComplaintTracking().catch(() => {
+                // Silently fail if module not available (development mode)
+            });
+        }
+    }, [complaint?.status]);
 
     // Staff Resolution Media State
     const [resImage, setResImage] = useState<string | null>(null);

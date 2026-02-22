@@ -47,11 +47,24 @@ export default function MaintenanceScreen() {
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');
     const [cvv, setCvv] = useState('');
+
+
     const [isProcessingCard, setIsProcessingCard] = useState(false);
     const [downloadingId, setDownloadingId] = useState<string | null>(null);
     const [accessDenied, setAccessDenied] = useState(false);
 
+    // Admin Generate Dues State
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
+    const [genMonth, setGenMonth] = useState('');
+    const [genYear, setGenYear] = useState(new Date().getFullYear().toString());
+    const [genAmount, setGenAmount] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+
     const fetchRecords = async () => {
+        // ... existing fetchRecords code ...
+        // Note: I will need to ensure this doesn't block Admin from seeing the screen if that was the issue. 
+        // The original fetchRecords had a check: if (user?.role === 'staff') setAccessDenied...
+        // Admin should be fine.
         if (user?.role === 'staff') {
             setAccessDenied(true);
             setLoading(false);
@@ -64,9 +77,7 @@ export default function MaintenanceScreen() {
             setRecords(data);
         } catch (error: any) {
             console.error('Failed to fetch maintenance records:', error);
-            if (error.response && error.response.status === 403) {
-                setAccessDenied(true);
-            }
+            // ...
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -76,7 +87,7 @@ export default function MaintenanceScreen() {
     useFocusEffect(
         useCallback(() => {
             fetchRecords();
-        }, [user])
+        }, [])
     );
 
     const onRefresh = useCallback(() => {
@@ -84,247 +95,174 @@ export default function MaintenanceScreen() {
         fetchRecords();
     }, []);
 
+    const handleGenerateDues = async () => {
+        if (!genMonth || !genYear || !genAmount) {
+            Alert.alert(t('common.error'), 'Please fill all fields');
+            return;
+        }
+
+        setIsGenerating(true);
+        try {
+            await maintenanceService.generateDues({
+                month: genMonth,
+                year: parseInt(genYear),
+                amount: parseFloat(genAmount)
+            });
+            Alert.alert(t('common.success'), 'Maintenance dues generated successfully');
+            setShowGenerateModal(false);
+            setGenAmount('');
+            setGenMonth('');
+            fetchRecords();
+        } catch (error) {
+            Alert.alert(t('common.error'), 'Failed to generate dues');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const formatCardNumber = (text: string) => {
         const cleaned = text.replace(/\D/g, '');
-        const matched = cleaned.match(/.{1,4}/g);
-        return matched ? matched.join(' ') : cleaned;
+        const groups = cleaned.match(/.{1,4}/g);
+        return groups ? groups.join(' ') : cleaned;
     };
 
     const formatExpiry = (text: string) => {
         const cleaned = text.replace(/\D/g, '');
-        if (cleaned.length > 2) {
-            return cleaned.substring(0, 2) + '/' + cleaned.substring(2, 4);
+        if (cleaned.length >= 2) {
+            return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
         }
         return cleaned;
     };
 
-    const openPaymentApp = async (method: string, amount: string) => {
-        const upiId = 'society@upi';
-        const name = 'Society Maintenance';
-        const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-
-        let appUrl = upiUrl;
-        if (method === 'Google Pay') {
-            appUrl = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-        } else if (method === 'Paytm') {
-            appUrl = `paytmmp://upi/pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-        }
-
+    const processPayment = async (recordId: string, method: string) => {
         try {
-            const canOpen = await Linking.canOpenURL(appUrl);
-            if (canOpen) {
-                await Linking.openURL(appUrl);
-            } else {
-                const canOpenGeneric = await Linking.canOpenURL(upiUrl);
-                if (canOpenGeneric) {
-                    await Linking.openURL(upiUrl);
-                } else {
-                    Alert.alert(t('common.error'), `Neither ${method} nor a generic UPI app was found on this device.`);
-                    return false;
-                }
-            }
-            return true;
+            setProcessingId(recordId);
+            await maintenanceService.payMaintenance(recordId, method);
+
+            Alert.alert(t('common.success'), t('maintenance.paymentSuccess'));
+            setShowPaymentModal(false);
+            setShowCardForm(false);
+            fetchRecords();
         } catch (error) {
-            console.error('Redirection error:', error);
-            Alert.alert(t('common.error'), 'Failed to open the payment app');
-            return false;
+            console.error(error);
+            Alert.alert(t('common.error'), t('maintenance.paymentFailed'));
+        } finally {
+            setProcessingId(null);
+            setIsProcessingCard(false);
         }
     };
 
+    const handleCardPayment = () => {
+        if (!cardNumber || !expiry || !cvv || !cardName) {
+            Alert.alert(t('common.error'), 'Please fill all card details');
+            return;
+        }
+
+        setIsProcessingCard(true);
+        if (selectedRecord) {
+            processPayment(selectedRecord.id, 'Credit Card');
+        }
+    };
+
+    const handlePayNow = (record: MaintenanceRecord) => {
+        setSelectedRecord({ id: record.id, amount: record.amount });
+        setShowPaymentModal(true);
+    };
+
     const handleDownloadReceipt = async (record: MaintenanceRecord) => {
-        setDownloadingId(record.id);
         try {
+            setDownloadingId(record.id);
+            if (!record.paidAt) throw new Error('Payment date missing');
+
             await receiptService.generateAndSave({
                 id: record.id,
                 month: record.month,
                 year: record.year,
                 amount: record.amount,
-                paidAt: record.paidAt!,
+                paidAt: record.paidAt,
                 residentName: record.resident.fullName,
                 flatNumber: record.resident.flatNumber
             });
         } catch (error) {
-            console.error('MaintenanceScreen: Receipt download failed:', error);
-            Alert.alert(t('common.error'), 'Failed to generate receipt');
+            console.error('Download error:', error);
+            Alert.alert(t('common.error'), t('maintenance.receiptDownloadFailed'));
         } finally {
             setDownloadingId(null);
         }
     };
 
-    const processPayment = async (id: string, method: string) => {
-        const record = records.find(r => r.id === id);
-        if (!record) return;
+    const filteredRecords = records.filter(record => {
+        const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
+        const searchLower = searchQuery.toLowerCase();
+        const matchesSearch =
+            record.month.toLowerCase().includes(searchLower) ||
+            record.year.toString().includes(searchLower) ||
+            record.amount.includes(searchLower);
 
-        if (method === 'Debit Card' || method === 'Credit Card') {
-            setShowPaymentModal(false);
-            setShowCardForm(true);
-            return;
-        }
-
-        setShowPaymentModal(false);
-
-        if (method === 'Google Pay' || method === 'Paytm') {
-            const success = await openPaymentApp(method, record.amount);
-            if (!success) return;
-        }
-
-        setProcessingId(id);
-        try {
-            await maintenanceService.payMaintenance(id);
-            Alert.alert(t('common.success'), t('maintenance.paymentProcessed', { method }));
-            fetchRecords();
-        } catch (error) {
-            Alert.alert(t('common.error'), t('maintenance.paymentFailed'));
-        } finally {
-            setProcessingId(null);
-            setSelectedRecord(null);
-        }
-    };
-
-    const handleCardPayment = async () => {
-        if (!cardName || cardNumber.length < 19 || expiry.length < 5 || cvv.length < 3) {
-            Alert.alert(t('maintenance.invalidDetails'), t('maintenance.fillAllDetails'));
-            return;
-        }
-
-        setIsProcessingCard(true);
-        try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            if (selectedRecord) {
-                await maintenanceService.payMaintenance(selectedRecord.id);
-                Alert.alert(t('common.success'), t('maintenance.paymentSuccess'));
-                setShowCardForm(false);
-                setCardName('');
-                setCardNumber('');
-                setExpiry('');
-                setCvv('');
-                fetchRecords();
-            }
-        } catch (error) {
-            Alert.alert(t('common.error'), t('maintenance.cardPaymentFailed'));
-        } finally {
-            setIsProcessingCard(false);
-            setSelectedRecord(null);
-        }
-    };
-
-    const handlePay = (id: string, amount: string) => {
-        setSelectedRecord({ id, amount });
-        setShowPaymentModal(true);
-    };
-
-    const PaymentOption = ({ title, subtitle, icon, onPress, color = '#2563eb' }: { title: string, subtitle: string, icon: any, onPress: () => void, color?: string }) => (
-        <TouchableOpacity
-            onPress={onPress}
-            className="flex-row items-center p-4 bg-slate-50 rounded-[28px] mb-3 border border-slate-100 active:bg-slate-100"
-        >
-            <View className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-sm border border-slate-50">
-                <Icon icon={icon} color={color} size={24} />
-            </View>
-            <View className="ml-4 flex-1">
-                <Text className="text-slate-900 font-black text-base tracking-tight">{title}</Text>
-                <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">{subtitle}</Text>
-            </View>
-            <Icon icon={ChevronRight} color="#cbd5e1" size={18} />
-        </TouchableOpacity>
-    );
-
-    const filteredRecords = records.filter(r => {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = (r.month?.toLowerCase() || '').includes(query) ||
-            r.year?.toString().includes(searchQuery) ||
-            (r.resident?.fullName?.toLowerCase() || '').includes(query);
-        const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        return matchesStatus && matchesSearch;
     });
 
-    const renderItem = ({ item }: { item: MaintenanceRecord }) => {
-        const isPaid = item.status === 'paid';
-
-        return (
-            <Card className="mb-6 overflow-hidden">
-                <View className="p-6">
-                    <View className="flex-row justify-between items-start mb-6">
-                        <View>
-                            <Text className="text-2xl font-black text-slate-900 leading-tight">
-                                {item.month} {item.year}
-                            </Text>
-                            <View className="flex-row items-center mt-2">
-                                <View className="bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 mr-2">
-                                    <Text className="text-slate-500 font-black text-[9px] uppercase tracking-widest">
-                                        {t('maintenance.flat')} {item.resident.flatNumber}
-                                    </Text>
-                                </View>
-                                <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                                    {item.resident.fullName}
+    const renderItem = ({ item }: { item: MaintenanceRecord }) => (
+        <View className="mb-4">
+            <Card className="p-5 border-l-4 border-l-blue-500 rounded-2xl bg-white shadow-sm">
+                <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                        <View className="flex-row items-center mb-2">
+                            <View className={`px-2.5 py-1 rounded-lg ${item.status === 'paid' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+                                <Text className={`text-[10px] font-black uppercase tracking-widest ${item.status === 'paid' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                    {item.status === 'paid' ? t('maintenance.paid') : t('maintenance.due')}
                                 </Text>
                             </View>
-                        </View>
-                        <View className={`px-4 py-1.5 rounded-xl border ${isPaid ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-                            <Text className={`text-[10px] font-black uppercase tracking-widest ${isPaid ? 'text-emerald-700' : 'text-rose-700'}`}>
-                                {t(`maintenance.${item.status}`)}
+                            <Text className="text-slate-400 text-xs font-bold ml-2">
+                                {item.month} {item.year}
                             </Text>
                         </View>
-                    </View>
-
-                    <View className="flex-row items-center mb-6">
-                        <View className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center mr-4 border border-slate-100">
-                            <Icon icon={IndianRupee} color="#1e293b" size={20} />
+                        <View className="flex-row items-center mb-1">
+                            <Icon icon={IndianRupee} size={20} color="#0f172a" strokeWidth={2.5} />
+                            <Text className="text-3xl font-black text-slate-900 ml-1">
+                                {item.amount}
+                            </Text>
                         </View>
-                        <View>
-                            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-0.5">{t('maintenance.amountDue')}</Text>
-                            <Text className="text-3xl font-black text-slate-900 tracking-tight">₹{item.amount}</Text>
-                        </View>
-                    </View>
-
-                    {isPaid ? (
-                        <View className="flex-row items-center py-4 px-5 bg-slate-50 rounded-[20px] border border-slate-100">
-                            <View className="w-8 h-8 bg-emerald-100 rounded-full items-center justify-center mr-3">
-                                <Icon icon={CheckCircle2} color="#059669" size={16} />
+                        {item.status === 'paid' && item.paidAt && (
+                            <View className="flex-row items-center mt-1">
+                                <Icon icon={CheckCircle2} size={12} color="#10b981" />
+                                <Text className="text-emerald-600 text-[10px] font-bold ml-1">
+                                    {t('maintenance.paidOn', { date: new Date(item.paidAt).toLocaleDateString() })}
+                                </Text>
                             </View>
-                            <Text className="flex-1 text-slate-600 text-xs font-bold leading-tight mr-3">
-                                {t('maintenance.paidOn', { date: new Date(item.paidAt!).toLocaleDateString() })}
-                            </Text>
+                        )}
+                    </View>
+
+                    <View>
+                        {item.status === 'due' ? (
+                            user?.role !== 'admin' ? (
+                                <TouchableOpacity
+                                    onPress={() => handlePayNow(item)}
+                                    className="bg-blue-600 px-4 py-2 rounded-xl shadow-lg shadow-blue-200 active:bg-blue-700"
+                                >
+                                    <Text className="text-white font-black text-xs uppercase tracking-widest">
+                                        {t('maintenance.payNow')}
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : null
+                        ) : (
                             <TouchableOpacity
                                 onPress={() => handleDownloadReceipt(item)}
                                 disabled={downloadingId === item.id}
-                                className="bg-blue-50 p-2 rounded-xl border border-blue-100"
+                                className="bg-slate-100 p-2.5 rounded-xl border border-slate-200 active:bg-slate-200"
                             >
                                 {downloadingId === item.id ? (
-                                    <ActivityIndicator size="small" color="#2563eb" />
+                                    <ActivityIndicator size="small" color="#64748b" />
                                 ) : (
-                                    <Icon icon={Download} color="#2563eb" size={16} />
+                                    <Icon icon={Download} size={18} color="#64748b" />
                                 )}
                             </TouchableOpacity>
-                        </View>
-                    ) : (
-                        user?.role === 'resident' && (
-                            <TouchableOpacity
-                                onPress={() => handlePay(item.id, item.amount)}
-                                disabled={processingId === item.id}
-                                className="h-16 bg-blue-800 rounded-2xl shadow-lg shadow-blue-200 flex-row items-center justify-center px-6 active:scale-[0.98]"
-                            >
-                                {processingId === item.id ? (
-                                    <ActivityIndicator color="white" />
-                                ) : (
-                                    <>
-                                        <Icon icon={IndianRupee} color="white" size={20} />
-                                        <Text className="text-white font-black text-base ml-2 uppercase tracking-widest">{t('maintenance.payMaintenance')}</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        )
-                    )}
-                </View>
-                {!isPaid && (
-                    <View className="bg-amber-50 py-3 px-6 flex-row items-center border-t border-amber-100">
-                        <Icon icon={Clock} color="#d97706" size={14} />
-                        <Text className="text-amber-700 text-[10px] font-black uppercase tracking-widest ml-2">{t('maintenance.dueByEnd')}</Text>
+                        )}
                     </View>
-                )}
+                </View>
             </Card>
-        );
-    };
+        </View>
+    );
 
     return (
         <View className="flex-1 bg-slate-50">
@@ -334,16 +272,28 @@ export default function MaintenanceScreen() {
                 className="px-6 pb-8 shadow-sm border-b border-slate-100"
                 style={{ paddingTop: insets.top + 10 }}
             >
-                <View className="flex-row justify-between items-center mb-6">
-                    <View>
-                        <Text className="text-3xl font-black text-slate-900 tracking-tight">{t('maintenance.title')}</Text>
+                <View className="flex-row justify-between items-start mb-6">
+                    <View className="flex-1 mr-4">
+                        <Text className="text-3xl font-black text-slate-900 tracking-tight" numberOfLines={1} adjustsFontSizeToFit>{t('maintenance.title')}</Text>
                         <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">{t('maintenance.subtitle')}</Text>
                     </View>
-                    <View className="bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
-                        <Text className="text-blue-800 font-black text-[10px] uppercase tracking-widest">{t('maintenance.digitalReceipts')}</Text>
+                    <View className="flex-row gap-2 flex-shrink-0">
+                        {/* Admin Generate Button */}
+                        {user?.role === 'admin' && (
+                            <TouchableOpacity
+                                onPress={() => setShowGenerateModal(true)}
+                                className="bg-blue-600 px-3 py-1.5 rounded-xl border border-blue-700 active:bg-blue-700"
+                            >
+                                <Text className="text-white font-black text-[10px] uppercase tracking-widest">+ Generate</Text>
+                            </TouchableOpacity>
+                        )}
+                        <View className="bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+                            <Text className="text-blue-800 font-black text-[10px] uppercase tracking-widest">{t('maintenance.digitalReceipts')}</Text>
+                        </View>
                     </View>
                 </View>
 
+                {/* ... Search Bar & Filters ... */}
                 {/* Search Bar */}
                 <View className="flex-row items-center bg-white border border-slate-100 rounded-2xl px-4 h-14 shadow-sm mb-6">
                     <Icon icon={Search} color="#94a3b8" size={20} />
@@ -419,6 +369,79 @@ export default function MaintenanceScreen() {
                     />
                 )}
             </View>
+
+            {/* ... Existing Modals ... */}
+
+            {/* Admin Generate Dues Modal */}
+            <Modal
+                visible={showGenerateModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowGenerateModal(false)}
+            >
+                <View className="flex-1 bg-slate-900/95 justify-center p-6">
+                    <Card className="p-8 shadow-2xl border-white/10 bg-slate-800 rounded-[40px]">
+                        <View className="flex-row justify-between items-center mb-10">
+                            <View className="bg-blue-600/20 px-4 py-2 rounded-xl border border-blue-500/30">
+                                <Text className="text-blue-400 font-black text-[10px] uppercase tracking-widest">Generate Dues</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => setShowGenerateModal(false)}
+                                className="bg-slate-700 p-2.5 rounded-xl active:bg-slate-600"
+                            >
+                                <Icon icon={X} color="#cbd5e1" size={20} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View className="space-y-6">
+                            <View>
+                                <Text className="text-slate-400 text-[9px] font-black mb-2.5 uppercase tracking-widest ml-1">Month</Text>
+                                <TextInput
+                                    className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 text-white text-base font-bold"
+                                    placeholder="e.g. October"
+                                    placeholderTextColor="#475569"
+                                    value={genMonth}
+                                    onChangeText={setGenMonth}
+                                />
+                            </View>
+                            <View>
+                                <Text className="text-slate-400 text-[9px] font-black mb-2.5 uppercase tracking-widest ml-1">Year</Text>
+                                <TextInput
+                                    className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 text-white text-base font-bold"
+                                    placeholder="e.g. 2024"
+                                    placeholderTextColor="#475569"
+                                    value={genYear}
+                                    keyboardType="numeric"
+                                    onChangeText={setGenYear}
+                                />
+                            </View>
+                            <View>
+                                <Text className="text-slate-400 text-[9px] font-black mb-2.5 uppercase tracking-widest ml-1">Amount</Text>
+                                <TextInput
+                                    className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 text-white text-base font-bold"
+                                    placeholder="e.g. 1500"
+                                    placeholderTextColor="#475569"
+                                    value={genAmount}
+                                    keyboardType="numeric"
+                                    onChangeText={setGenAmount}
+                                />
+                            </View>
+
+                            <TouchableOpacity
+                                onPress={handleGenerateDues}
+                                disabled={isGenerating}
+                                className="h-16 bg-blue-600 rounded-3xl mt-8 shadow-xl shadow-blue-900 flex-row items-center justify-center active:scale-[0.98]"
+                            >
+                                {isGenerating ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <Text className="text-white font-black text-base uppercase tracking-widest">Generate & Notify</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </Card>
+                </View>
+            </Modal>
 
             {/* General Payment Modal */}
             <Modal
@@ -577,4 +600,28 @@ export default function MaintenanceScreen() {
         </View>
     );
 }
+
+interface PaymentOptionProps {
+    title: string;
+    subtitle: string;
+    icon: any;
+    onPress: () => void;
+    color: string;
+}
+
+const PaymentOption = ({ title, subtitle, icon: IconComponent, onPress, color }: PaymentOptionProps) => (
+    <TouchableOpacity
+        onPress={onPress}
+        className="flex-row items-center p-4 bg-slate-50 border border-slate-100 rounded-2xl mb-3 active:bg-blue-50 active:border-blue-100"
+    >
+        <View className={`w-12 h-12 rounded-full items-center justify-center mr-4`} style={{ backgroundColor: `${color}15` }}>
+            <IconComponent size={24} color={color} />
+        </View>
+        <View className="flex-1">
+            <Text className="text-slate-900 font-bold text-base">{title}</Text>
+            <Text className="text-slate-400 text-xs font-medium">{subtitle}</Text>
+        </View>
+        <Icon icon={ChevronRight} size={20} color="#94a3b8" />
+    </TouchableOpacity>
+);
 

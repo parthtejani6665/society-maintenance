@@ -1,4 +1,5 @@
 import { requestWidgetUpdate } from 'react-native-android-widget';
+import Constants from 'expo-constants';
 import { MaintenanceSmallWidget } from '../components/MaintenanceSmallWidget';
 import { MaintenanceMediumWidget } from '../components/MaintenanceMediumWidget';
 import { MaintenanceLargeWidget } from '../components/MaintenanceLargeWidget';
@@ -54,6 +55,12 @@ export const WidgetService = {
     },
 
     fetchAndPushWidgetData: async () => {
+        // Skip if running in Expo Go
+        if (Constants.appOwnership === 'expo') {
+            console.log('Skipping Widget Update: Not supported in Expo Go');
+            return;
+        }
+
         try {
             const data = await WidgetService.getMaintenanceWidgetData();
 

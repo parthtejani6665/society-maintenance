@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.digitaldwell.mobile"
+      "bundleIdentifier": "com.digitaldwell.mobile",
+      "config": {
+        "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY"
+      }
     },
     "android": {
       "package": "com.society.ai",
@@ -22,6 +25,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCFhaEamXPrTJzojmUTTJwvfE94ZlK2tH0"
+        }
       },
       "intentFilters": [
         {
@@ -66,6 +74,12 @@
       "expo-secure-store",
       "expo-web-browser",
       "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
       [
         "react-native-android-widget",
         {
